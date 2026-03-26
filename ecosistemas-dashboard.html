@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecosistemas — Gestión de Proyectos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', -apple-system, system-ui, sans-serif; background: #fff; color: #0F172A; }
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    const INIT_Z = [
+      { id:"Z-001", title:"Contenido RRSS — GastronomíaOrigen", area:"Contenido", status:"pendiente", priority:"Alta", deadline:"2026-04-07", empresa:"GastronomíaOrigen", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
+      { id:"Z-002", title:"Contenido RRSS — EspacioMenosUno", area:"Contenido", status:"pendiente", priority:"Alta", deadline:"2026-04-10", empresa:"EspacioMenosUno", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
+      { id:"Z-003", title:"Contenido RRSS — Barrancón", area:"Contenido", status:"pendiente", priority:"Alta", deadline:"2026-04-14", empresa:"Barrancón", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
+      { id:"Z-004", title:"Contenido RRSS — MapaMapa", area:"Contenido", status:"pendiente", priority:"Media", deadline:"2026-04-17", empresa:"MapaMapa", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
+      { id:"Z-005", title:"Contenido RRSS — CNC", area:"Contenido", status:"pendiente", priority:"Media", deadline:"2026-04-21", empresa:"CNC", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
+      { id:"Z-006", title:"Contenido RRSS — Rental La Fábrica", area:"Contenido", status:"pendiente", priority:"Media", deadline:"2026-04-24", empresa:"Rental La Fábrica", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
+      { id:"Z-007", title:"Armar grilla mensual Abril — Todas", area:"Grilla", status:"pendiente", priority:"Alta", deadline:"2026-04-28", empresa:"Todas", fase:"Fase 1: Contenido Foto", effort:"M", deliverable:"Grilla completa mes", detail:"Consolidar todo el contenido en grilla mensual por marca." },
+      { id:"Z-008", title:"Aprobación grilla + ajustes", area:"Grilla", status:"pendiente", priority:"Alta", deadline:"2026-04-30", empresa:"Todas", fase:"Fase 1: Contenido Foto", effort:"XS", deliverable:"Grilla aprobada", detail:"Revisión con equipo, ajustes finales." },
+      { id:"Z-009", title:"Planificación Reels — Todas", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-05", empresa:"Todas", fase:"Fase 2: Videos / Reels", effort:"M", deliverable:"Plan de reels", detail:"Definir plataformas, formatos, guiones para formato reel." },
+      { id:"Z-010", title:"Producción Reels — GastronomíaOrigen", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-12", empresa:"GastronomíaOrigen", fase:"Fase 2: Videos / Reels", effort:"L", deliverable:"Reels editados", detail:"Grabación, edición y entrega de reels." },
+      { id:"Z-011", title:"Producción Reels — EspacioMenosUno", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-16", empresa:"EspacioMenosUno", fase:"Fase 2: Videos / Reels", effort:"L", deliverable:"Reels editados", detail:"Grabación, edición y entrega de reels." },
+      { id:"Z-012", title:"Producción Reels — Barrancón", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-20", empresa:"Barrancón", fase:"Fase 2: Videos / Reels", effort:"L", deliverable:"Reels editados", detail:"Grabación, edición y entrega de reels." },
+      { id:"Z-013", title:"Producción Reels — MapaMapa+CNC+Rental", area:"Video/Reel", status:"pendiente", priority:"Baja", deadline:"2026-05-28", empresa:"Varias", fase:"Fase 2: Videos / Reels", effort:"XL", deliverable:"Reels x3 marcas", detail:"Producción de reels para las 3 marcas restantes." },
+      { id:"Z-014", title:"Grilla Mayo con Reels integrados", area:"Grilla", status:"pendiente", priority:"Alta", deadline:"2026-05-30", empresa:"Todas", fase:"Fase 2: Videos / Reels", effort:"M", deliverable:"Grilla foto+video", detail:"Integrar reels con fotos en grilla mensual unificada." },
+    ];
+
+    const INIT_W = [
+      { id:"W-001", title:"Revisión QA — GastronomíaOrigen", area:"QA Web", status:"en proceso", priority:"Alta", deadline:"2026-04-03", empresa:"GastronomíaOrigen", fase:"Fase 1: Webs Listas", effort:"S", deliverable:"Check QA", detail:"Web lista. Revisar responsive, velocidad, links, SEO.", note:"✅ LISTA" },
+      { id:"W-002", title:"Revisión QA — EspacioMenosUno", area:"QA Web", status:"en proceso", priority:"Alta", deadline:"2026-04-05", empresa:"EspacioMenosUno", fase:"Fase 1: Webs Listas", effort:"S", deliverable:"Check QA", detail:"Web lista. Revisar responsive, velocidad, links, SEO.", note:"✅ LISTA" },
+      { id:"W-003", title:"Revisión QA — Barrancón", area:"QA Web", status:"en proceso", priority:"Alta", deadline:"2026-04-07", empresa:"Barrancón", fase:"Fase 1: Webs Listas", effort:"S", deliverable:"Check QA", detail:"Web lista. Revisar responsive, velocidad, links, SEO.", note:"✅ LISTA" },
+      { id:"W-004", title:"Modificaciones — SimpleProducciones", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-04-14", empresa:"SimpleProducciones", fase:"Fase 2: Modificaciones", effort:"M", deliverable:"Web actualizada", detail:"Documentar cambios, implementar y testear.", note:"🔧 CAMBIOS" },
+      { id:"W-005", title:"Modificaciones — CNC", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-04-18", empresa:"CNC", fase:"Fase 2: Modificaciones", effort:"M", deliverable:"Web actualizada", detail:"Documentar cambios, implementar y testear.", note:"🔧 CAMBIOS" },
+      { id:"W-006", title:"Modificaciones — Rental La Fábrica", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-04-22", empresa:"Rental La Fábrica", fase:"Fase 2: Modificaciones", effort:"M", deliverable:"Web actualizada", detail:"Documentar cambios, implementar y testear.", note:"🔧 CAMBIOS" },
+      { id:"W-007", title:"Wireframes — ExBUNKER", area:"Diseño UX", status:"pendiente", priority:"Alta", deadline:"2026-04-28", empresa:"ExBUNKER", fase:"Fase 3: Web Nueva", effort:"M", deliverable:"Wireframes", detail:"Definir estructura, secciones, flujo." },
+      { id:"W-008", title:"Diseño visual — ExBUNKER", area:"Diseño UI", status:"pendiente", priority:"Alta", deadline:"2026-05-05", empresa:"ExBUNKER", fase:"Fase 3: Web Nueva", effort:"L", deliverable:"Mockups Figma", detail:"Diseño visual completo." },
+      { id:"W-009", title:"Desarrollo web — ExBUNKER", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-05-15", empresa:"ExBUNKER", fase:"Fase 3: Web Nueva", effort:"XL", deliverable:"Web online", detail:"Desarrollo, testing, deploy.", note:"🆕 NUEVA" },
+      { id:"W-010", title:"Setup Claude Code + Antigravity", area:"Automatización", status:"pendiente", priority:"Media", deadline:"2026-05-20", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"L", deliverable:"Entorno listo", detail:"Configurar IA para automatización marketing." },
+      { id:"W-011", title:"Automatizar creación imágenes", area:"Automatización", status:"pendiente", priority:"Media", deadline:"2026-05-25", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"L", deliverable:"Flujo imágenes", detail:"Pipeline imágenes marketing con IA." },
+      { id:"W-012", title:"Automatizar generación videos", area:"Automatización", status:"pendiente", priority:"Baja", deadline:"2026-06-02", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"XL", deliverable:"Pipeline video", detail:"Automatizar edición video con IA." },
+      { id:"W-013", title:"Automatizar campañas marketing", area:"Automatización", status:"pendiente", priority:"Media", deadline:"2026-06-10", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"XL", deliverable:"Campañas auto", detail:"Segmentación, envío, seguimiento automático." },
+    ];
+
+    const STS = ["pendiente","en proceso","hecho"];
+    const SC = {
+      pendiente:{l:"Pendiente",bg:"#FEF3C7",c:"#92400E",dot:"#F59E0B",ico:"⏳"},
+      "en proceso":{l:"En Proceso",bg:"#DBEAFE",c:"#1E40AF",dot:"#3B82F6",ico:"🔄"},
+      hecho:{l:"Hecho",bg:"#D1FAE5",c:"#065F46",dot:"#10B981",ico:"✅"},
+    };
+    const PC = {Alta:{bg:"#FEE2E2",c:"#991B1B"},Media:{bg:"#FEF3C7",c:"#92400E"},Baja:{bg:"#F1F5F9",c:"#475569"}};
+    const EC = {"GastronomíaOrigen":"#7C3AED","EspacioMenosUno":"#DB2777","Barrancón":"#EA580C","MapaMapa":"#0891B2","CNC":"#65A30D","Rental La Fábrica":"#CA8A04","Todas":"#4F46E5","Varias":"#4F46E5","SimpleProducciones":"#0D9488","ExBUNKER":"#DC2626"};
+    const EFFORTS = {XS:2,S:4,M:7,L:10,XL:14};
+
+    const persist = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} };
+    const restore = (k,d) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : d; } catch(e) { return d; } };
+
+    // ── MODAL ──
+    function Modal({task,onClose,onSave,onDelete}) {
+      const [t,setT]=useState(null);
+      useEffect(()=>{if(task)setT({...task})},[task]);
+      if(!task||!t) return null;
+      const u=(k,v)=>setT(p=>({...p,[k]:v}));
+      const Field=({label,children})=>(
+        <div style={{marginBottom:14}}>
+          <label style={{fontSize:10,fontWeight:700,color:"#94A3B8",display:"block",marginBottom:4,letterSpacing:"0.8px",textTransform:"uppercase"}}>{label}</label>
+          {children}
+        </div>
+      );
+      const inp={width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid #E2E8F0",fontSize:13,fontFamily:"inherit",color:"#0F172A",background:"#FAFBFC",outline:"none",boxSizing:"border-box"};
+      return (
+        <div style={{position:"fixed",inset:0,background:"#00000050",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,padding:16}} onClick={onClose}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:540,maxHeight:"92vh",overflow:"auto",boxShadow:"0 32px 100px #0003"}}>
+            <div style={{padding:"28px 32px 0"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:10,fontWeight:800,color:"#94A3B8",letterSpacing:"1.5px",background:"#F1F5F9",padding:"3px 10px",borderRadius:6}}>{t.id}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:EC[t.empresa]||"#64748B",background:`${EC[t.empresa]||"#64748B"}22`,padding:"3px 10px",borderRadius:6}}>{t.empresa}</span>
+                </div>
+                <button onClick={onClose} style={{background:"#F1F5F9",border:"none",width:32,height:32,borderRadius:8,fontSize:16,color:"#64748B",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              </div>
+              <input value={t.title} onChange={e=>u("title",e.target.value)} style={{width:"100%",fontSize:18,fontWeight:800,border:"none",outline:"none",color:"#0F172A",fontFamily:"inherit",marginBottom:20,padding:0,letterSpacing:"-0.3px",boxSizing:"border-box"}} />
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+                <Field label="Estado">
+                  <div style={{display:"flex",gap:6}}>
+                    {STS.map(s=>{const cfg=SC[s];return(
+                      <button key={s} onClick={()=>u("status",s)} style={{flex:1,padding:"8px 4px",borderRadius:8,border:t.status===s?`2px solid ${cfg.dot}`:"1.5px solid #E2E8F0",background:t.status===s?cfg.bg:"#fff",color:t.status===s?cfg.c:"#94A3B8",fontSize:10,fontWeight:700,cursor:"pointer",transition:"all 0.15s"}}>{cfg.ico} {cfg.l}</button>
+                    )})}
+                  </div>
+                </Field>
+                <Field label="Prioridad">
+                  <select value={t.priority} onChange={e=>u("priority",e.target.value)} style={inp}>
+                    {["Alta","Media","Baja"].map(o=><option key={o}>{o}</option>)}
+                  </select>
+                </Field>
+                <Field label="Esfuerzo">
+                  <div style={{display:"flex",gap:4}}>
+                    {["XS","S","M","L","XL"].map(e=>(
+                      <button key={e} onClick={()=>u("effort",e)} style={{flex:1,padding:"8px 2px",borderRadius:6,border:t.effort===e?"2px solid #0F172A":"1.5px solid #E2E8F0",background:t.effort===e?"#0F172A":"#fff",color:t.effort===e?"#fff":"#64748B",fontSize:11,fontWeight:700,cursor:"pointer"}}>{e}</button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Fecha límite">
+                  <input type="date" value={t.deadline} onChange={e=>u("deadline",e.target.value)} style={inp} />
+                </Field>
+                <Field label="Empresa">
+                  <input value={t.empresa} onChange={e=>u("empresa",e.target.value)} style={inp} />
+                </Field>
+                <Field label="Entregable">
+                  <input value={t.deliverable} onChange={e=>u("deliverable",e.target.value)} style={inp} />
+                </Field>
+              </div>
+              <Field label="Detalle / Notas (aquí puedes poner 'para 15 días', 'para 30 días', etc.)">
+                <textarea value={t.detail} onChange={e=>u("detail",e.target.value)} rows={4} style={{...inp,resize:"vertical",lineHeight:1.6}} />
+              </Field>
+            </div>
+            <div style={{padding:"16px 32px 24px",display:"flex",gap:10,justifyContent:"space-between",borderTop:"1px solid #F1F5F9"}}>
+              <button onClick={()=>{onDelete(t.id);onClose()}} style={{padding:"9px 18px",borderRadius:8,border:"1px solid #FEE2E2",background:"#FFF5F5",fontSize:12,fontWeight:600,cursor:"pointer",color:"#DC2626"}}>🗑 Eliminar</button>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={onClose} style={{padding:"9px 20px",borderRadius:8,border:"1px solid #E2E8F0",background:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",color:"#64748B"}}>Cancelar</button>
+                <button onClick={()=>{onSave(t);onClose()}} style={{padding:"9px 28px",borderRadius:8,border:"none",background:"#0F172A",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",letterSpacing:"0.3px"}}>Guardar ✓</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── CARD ──
+    function Card({task,onOpen,onDragStart}) {
+      const p=PC[task.priority]; const ec=EC[task.empresa]||"#64748B";
+      const overdue=new Date(task.deadline)<new Date()&&task.status!=="hecho";
+      const daysLeft=Math.ceil((new Date(task.deadline)-new Date())/(864e5));
+      return (
+        <div draggable onDragStart={e=>{e.dataTransfer.setData("text/plain",task.id);onDragStart(task.id)}}
+          onClick={()=>onOpen(task)}
+          style={{background:"#fff",borderRadius:12,padding:"14px 16px",marginBottom:8,border:"1px solid #E8ECF0",cursor:"grab",transition:"all 0.2s",position:"relative"}}
+          onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 6px 24px #0001";e.currentTarget.style.transform="translateY(-2px)"}}
+          onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none"}}>
+          <div style={{position:"absolute",left:0,top:0,bottom:0,width:4,background:ec,borderRadius:"12px 0 0 12px"}} />
+          <div style={{paddingLeft:6}}>
+            <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
+              <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:4,background:`${ec}22`,color:ec,letterSpacing:"0.3px"}}>{task.empresa}</span>
+              <span style={{fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4,background:p.bg,color:p.c}}>{task.priority}</span>
+              {task.note && <span style={{fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#F0FDF4",color:"#15803D"}}>{task.note}</span>}
+            </div>
+            <div style={{fontSize:13,fontWeight:600,color:"#0F172A",lineHeight:1.4,marginBottom:8}}>{task.title}</div>
+            {task.detail && <div style={{fontSize:10,color:"#64748B",lineHeight:1.4,marginBottom:8,maxHeight:32,overflow:"hidden",textOverflow:"ellipsis"}}>{task.detail.slice(0,80)}{task.detail.length>80?"...":""}</div>}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:9,color:"#94A3B8",fontWeight:500}}>{task.effort} · {task.area}</span>
+              <span style={{fontSize:10,fontWeight:overdue?700:500,color:overdue?"#DC2626":daysLeft<=3&&daysLeft>=0?"#EA580C":"#64748B",background:overdue?"#FEE2E2":daysLeft<=3&&daysLeft>=0?"#FFF7ED":"#F8FAFC",padding:"2px 8px",borderRadius:5}}>
+                {overdue?`⚠ Atrasada`:daysLeft<=0?"Hoy":`${daysLeft}d`} · {task.deadline.slice(5)}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── KANBAN ──
+    function Kanban({tasks,onOpen,onStatusChange,onDragStart}) {
+      const [dragOver,setDragOver]=useState(null);
+      return (
+        <div style={{display:"flex",gap:16,overflowX:"auto",paddingBottom:8}}>
+          {STS.map(s=>{
+            const cfg=SC[s]; const col=tasks.filter(t=>t.status===s);
+            return (
+              <div key={s} style={{flex:1,minWidth:280}}
+                onDragOver={e=>{e.preventDefault();setDragOver(s)}}
+                onDragLeave={()=>setDragOver(null)}
+                onDrop={e=>{e.preventDefault();setDragOver(null);const id=e.dataTransfer.getData("text/plain");if(id)onStatusChange(id,s)}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,padding:"4px 2px"}}>
+                  <span style={{width:10,height:10,borderRadius:"50%",background:cfg.dot,boxShadow:`0 0 0 3px ${cfg.bg}`}} />
+                  <span style={{fontSize:14,fontWeight:800,color:"#0F172A",letterSpacing:"-0.3px"}}>{cfg.l}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:"#94A3B8",background:"#F1F5F9",minWidth:26,height:26,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}>{col.length}</span>
+                </div>
+                <div style={{background:dragOver===s?"#EEF2FF":"#F8FAFC",borderRadius:14,padding:10,minHeight:120,border:dragOver===s?"2px dashed #818CF8":"1.5px solid #F1F5F9",transition:"all 0.2s"}}>
+                  {col.map(t=><Card key={t.id} task={t} onOpen={onOpen} onDragStart={onDragStart}/>)}
+                  {col.length===0 && <div style={{textAlign:"center",padding:40,color:"#CBD5E1",fontSize:12}}>Arrastra tareas aquí</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ── GANTT ──
+    function Gantt({tasks}) {
+      const sorted=[...tasks].sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+      const dates=sorted.map(t=>new Date(t.deadline).getTime());
+      if(!dates.length) return <div style={{textAlign:"center",padding:40,color:"#94A3B8"}}>Sin tareas</div>;
+      const minD=Math.min(...dates)-12*864e5; const maxD=Math.max(...dates)+12*864e5; const range=maxD-minD;
+      const weeks=[]; let d=new Date(minD); while(d.getTime()<=maxD){weeks.push(new Date(d));d.setDate(d.getDate()+7)}
+      const fases=[...new Set(sorted.map(t=>t.fase))]; const fC=["#7C3AED","#2563EB","#EA580C","#059669"];
+      const today=new Date().getTime(); const todayPct=((today-minD)/range)*100;
+      return (
+        <div style={{overflowX:"auto",background:"#FAFBFC",borderRadius:16,padding:20,border:"1px solid #E2E8F0"}}>
+          <div style={{minWidth:900,position:"relative"}}>
+            <div style={{display:"flex",borderBottom:"2px solid #E2E8F0",paddingBottom:10,marginBottom:6}}>
+              <div style={{width:260,minWidth:260,fontSize:10,fontWeight:800,color:"#94A3B8",letterSpacing:"1.2px",padding:"0 8px"}}>TAREA</div>
+              <div style={{flex:1,display:"flex",position:"relative"}}>
+                {weeks.map((w,i)=><div key={i} style={{flex:7,fontSize:9,color:"#94A3B8",textAlign:"center",borderLeft:"1px solid #F1F5F9",fontWeight:600}}>{w.toLocaleDateString("es-CL",{day:"2-digit",month:"short"})}</div>)}
+              </div>
+            </div>
+            {fases.map((fase,fi)=>(
+              <div key={fase}>
+                <div style={{padding:"14px 8px 6px",fontSize:11,fontWeight:800,color:fC[fi%4],letterSpacing:"0.3px"}}>{fase}</div>
+                {sorted.filter(t=>t.fase===fase).map(task=>{
+                  const td=new Date(task.deadline).getTime(); const bar=EFFORTS[task.effort]||7;
+                  const startOff=Math.max(0,td-bar*864e5-minD); const leftPct=(startOff/range)*100; const widthPct=(bar*864e5/range)*100;
+                  const st=SC[task.status];
+                  return (
+                    <div key={task.id} style={{display:"flex",alignItems:"center",padding:"4px 0",borderBottom:"1px solid #FAFBFC"}}>
+                      <div style={{width:260,minWidth:260,padding:"0 8px",display:"flex",alignItems:"center",gap:6}}>
+                        <span style={{width:8,height:8,borderRadius:"50%",background:st.dot,flexShrink:0,boxShadow:`0 0 0 2px ${st.bg}`}} />
+                        <span style={{fontSize:11,color:"#334155",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",fontWeight:500}}>{task.title}</span>
+                      </div>
+                      <div style={{flex:1,position:"relative",height:26}}>
+                        <div style={{position:"absolute",left:`${leftPct}%`,width:`${Math.max(widthPct,2.5)}%`,height:20,top:3,background:task.status==="hecho"?`${st.dot}25`:`${fC[fi%4]}15`,borderRadius:6,border:`1.5px solid ${task.status==="hecho"?st.dot:fC[fi%4]}40`,display:"flex",alignItems:"center",paddingLeft:6,transition:"all 0.3s"}}>
+                          <span style={{fontSize:8,color:task.status==="hecho"?st.dot:fC[fi%4],fontWeight:700,whiteSpace:"nowrap"}}>{task.status==="hecho"?"✓ ":""}{task.deadline.slice(5)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+            {todayPct>0&&todayPct<100&&(
+              <div style={{position:"absolute",left:`calc(260px + ${todayPct}% * (100% - 260px) / 100%)`,top:0,bottom:0,width:2,background:"#DC2626",opacity:0.4,zIndex:1,pointerEvents:"none"}}>
+                <div style={{position:"absolute",top:-2,left:-12,fontSize:8,color:"#DC2626",fontWeight:700,background:"#FEE2E2",padding:"1px 4px",borderRadius:3}}>HOY</div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── STATS ──
+    function Stats({tasks}) {
+      const t=tasks.length; const done=tasks.filter(x=>x.status==="hecho").length;
+      const doing=tasks.filter(x=>x.status==="en proceso").length;
+      const over=tasks.filter(x=>new Date(x.deadline)<new Date()&&x.status!=="hecho").length;
+      const pct=t?Math.round(done/t*100):0;
+      const items=[
+        {l:"Total",v:t,c:"#334155",bg:"#F1F5F9"},
+        {l:"En Proceso",v:doing,c:"#2563EB",bg:"#DBEAFE"},
+        {l:"Hechas",v:done,c:"#059669",bg:"#D1FAE5"},
+        {l:"Atrasadas",v:over,c:over?"#DC2626":"#64748B",bg:over?"#FEE2E2":"#F1F5F9"},
+        {l:"Avance",v:`${pct}%`,c:"#4F46E5",bg:"#EEF2FF"},
+      ];
+      return (
+        <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap"}}>
+          {items.map((s,i)=>(
+            <div key={i} style={{background:s.bg,borderRadius:12,padding:"14px 20px",flex:1,minWidth:90}}>
+              <div style={{fontSize:9,fontWeight:800,color:"#94A3B8",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:3}}>{s.l}</div>
+              <div style={{fontSize:24,fontWeight:800,color:s.c,letterSpacing:"-1px"}}>{s.v}</div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ── APP ──
+    function App() {
+      const [zT,setZT]=useState(()=>restore("eco_z",INIT_Z));
+      const [wT,setWT]=useState(()=>restore("eco_w",INIT_W));
+      const [proj,setProj]=useState("z");
+      const [view,setView]=useState("kanban");
+      const [modal,setModal]=useState(null);
+      const [filter,setFilter]=useState("todas");
+      const [drag,setDrag]=useState(null);
+
+      const tasks=proj==="z"?zT:wT;
+      const setTasks=proj==="z"?setZT:setWT;
+
+      useEffect(()=>{persist("eco_z",zT)},[zT]);
+      useEffect(()=>{persist("eco_w",wT)},[wT]);
+
+      const emps=["todas",...new Set(tasks.map(t=>t.empresa))];
+      const filtered=filter==="todas"?tasks:tasks.filter(t=>t.empresa===filter);
+
+      const changeStatus=useCallback((id,st)=>setTasks(p=>p.map(t=>t.id===id?{...t,status:st}:t)),[setTasks]);
+      const saveTask=useCallback(u=>setTasks(p=>p.map(t=>t.id===u.id?u:t)),[setTasks]);
+      const deleteTask=useCallback(id=>setTasks(p=>p.filter(t=>t.id!==id)),[setTasks]);
+
+      const addTask=()=>{
+        const pre=proj==="z"?"Z":"W";
+        const n=tasks.length+1;
+        const t={id:`${pre}-${String(n).padStart(3,"0")}`,title:"Nueva tarea",area:proj==="z"?"Contenido":"Desarrollo",status:"pendiente",priority:"Media",deadline:new Date(Date.now()+7*864e5).toISOString().slice(0,10),empresa:"Todas",fase:proj==="z"?"Fase 1: Contenido Foto":"Fase 1: Webs Listas",effort:"M",deliverable:"Por definir",detail:""};
+        setTasks(p=>[...p,t]);
+        setModal(t);
+      };
+
+      const accent=proj==="z"?"#7C3AED":"#2563EB";
+
+      return (
+        <div style={{fontFamily:"'DM Sans',-apple-system,system-ui,sans-serif",background:"#fff",color:"#0F172A",minHeight:"100vh"}}>
+          {/* HEADER */}
+          <div style={{background:"linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#334155 100%)",padding:"24px 28px 0",color:"#fff"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12,paddingBottom:16}}>
+              <div>
+                <div style={{fontSize:9,fontWeight:800,letterSpacing:"3px",color:"#475569",textTransform:"uppercase",marginBottom:6}}>Proyecto Ecosistemas</div>
+                <h1 style={{fontSize:24,fontWeight:800,margin:0,letterSpacing:"-0.8px"}}>Gestión de Proyectos</h1>
+                <p style={{fontSize:11,color:"#64748B",margin:"4px 0 0"}}>Arrastra tarjetas entre columnas · Click para editar · Todo se guarda automático</p>
+              </div>
+              <button onClick={addTask} style={{padding:"10px 24px",borderRadius:10,border:"2px solid #ffffff20",background:"transparent",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",letterSpacing:"0.3px",transition:"all 0.2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="#ffffff15"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}>+ Nueva Tarea</button>
+            </div>
+            <div style={{display:"flex",gap:4}}>
+              {[{k:"z",l:"📸 Zurnerym — RRSS",c:"#7C3AED"},{k:"w",l:"🌐 Diseño Web",c:"#2563EB"}].map(p=>(
+                <button key={p.k} onClick={()=>{setProj(p.k);setFilter("todas")}} style={{padding:"10px 24px",fontSize:12,fontWeight:700,borderRadius:"12px 12px 0 0",cursor:"pointer",border:"none",transition:"all 0.2s",background:proj===p.k?"#fff":"#ffffff10",color:proj===p.k?p.c:"#64748B"}}>{p.l}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* TOOLBAR */}
+          <div style={{padding:"14px 28px",borderBottom:"1px solid #E2E8F0",display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:10,alignItems:"center"}}>
+            <div style={{display:"flex",gap:4}}>
+              {[{k:"kanban",l:"🗂 Kanban"},{k:"gantt",l:"📅 Gantt"}].map(v=>(
+                <button key={v.k} onClick={()=>setView(v.k)} style={{padding:"7px 18px",fontSize:11,fontWeight:700,borderRadius:8,cursor:"pointer",transition:"all 0.15s",border:view===v.k?`2px solid ${accent}`:"1.5px solid #E2E8F0",background:view===v.k?`${accent}10`:"#fff",color:view===v.k?accent:"#64748B"}}>{v.l}</button>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}}>
+              <span style={{fontSize:9,fontWeight:800,color:"#94A3B8",letterSpacing:"1px",marginRight:4}}>FILTRAR:</span>
+              {emps.map(e=>{
+                const c=EC[e]||accent;
+                return <button key={e} onClick={()=>setFilter(e)} style={{padding:"5px 12px",fontSize:10,fontWeight:600,borderRadius:20,cursor:"pointer",transition:"all 0.15s",border:filter===e?`2px solid ${c}`:"1.5px solid #E2E8F0",background:filter===e?`${c}15`:"#fff",color:filter===e?c:"#94A3B8"}}>{e==="todas"?"Todas":e}</button>
+              })}
+            </div>
+          </div>
+
+          {/* CONTENT */}
+          <div style={{padding:"20px 28px 40px"}}>
+            <Stats tasks={filtered}/>
+            {view==="kanban"?<Kanban tasks={filtered} onOpen={setModal} onStatusChange={changeStatus} onDragStart={setDrag}/>:<Gantt tasks={filtered}/>}
+          </div>
+
+          <div style={{padding:"12px 28px",borderTop:"1px solid #F1F5F9",fontSize:10,color:"#CBD5E1",textAlign:"center",background:"#FAFBFC"}}>
+            Proyecto Ecosistemas · Arrastra tarjetas entre columnas para cambiar estado · Click para editar detalles · Los cambios se guardan automáticamente
+          </div>
+
+          <Modal task={modal} onClose={()=>setModal(null)} onSave={saveTask} onDelete={deleteTask}/>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
