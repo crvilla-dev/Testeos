@@ -1,366 +1,835 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ecosistemas — Gestión de Proyectos</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', -apple-system, system-ui, sans-serif; background: #fff; color: #0F172A; }
-    ::-webkit-scrollbar { height: 6px; width: 6px; }
-    ::-webkit-scrollbar-track { background: #F1F5F9; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORIGEN — Banquetería & Eventos</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --verde: #405a5c;
+  --footer: #2a3a38;
+  --crema: #f0efe6;
+  --dorado: #caaa6f;
+  --blanco: #ffffff;
+  --texto: #1a1a1a;
+  --titulo: 'Cormorant Garamond', serif;
+  --cuerpo: 'Montserrat', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--cuerpo); background: var(--crema); color: var(--texto); overflow-x: hidden; cursor: none; }
+ 
+/* CURSOR */
+.cursor { position: fixed; width: 10px; height: 10px; background: var(--dorado); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .3s,height .3s; }
+.cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid var(--dorado); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: width .3s,height .3s,opacity .3s; opacity: .6; }
+.cursor.hover { width: 16px; height: 16px; }
+.cursor-ring.hover { width: 52px; height: 52px; opacity: 1; }
+ 
+/* PAGES */
+.page { display: none; min-height: 100vh; }
+.page.active { display: block; }
+ 
+/* NAVBAR */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.5rem 3rem; display: flex; justify-content: space-between; align-items: center; transition: background .5s,padding .5s,box-shadow .5s; }
+nav.scrolled { background: var(--blanco); padding: 1rem 3rem; box-shadow: 0 1px 20px rgba(0,0,0,.08); }
+.nav-logo { font-family: var(--titulo); font-size: 1.4rem; font-weight: 500; letter-spacing: .2em; color: var(--blanco); transition: color .5s; text-decoration: none; cursor: none; }
+nav.scrolled .nav-logo, nav.dark .nav-logo { color: var(--verde); }
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a { font-family: var(--cuerpo); font-size: .7rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.85); text-decoration: none; transition: color .3s; cursor: none; }
+nav.scrolled .nav-links a, nav.dark .nav-links a { color: var(--verde); }
+.nav-links a:hover, .nav-links a.active { color: var(--dorado); }
+.nav-cta { font-family: var(--cuerpo); font-size: .65rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--dorado); text-decoration: none; border: 1px solid var(--dorado); padding: .6rem 1.4rem; transition: all .3s; cursor: none; }
+.nav-cta:hover { background: var(--dorado); color: var(--blanco); }
+ 
+/* HERO */
+.hero { position: fixed; top: 0; left: 0; right: 0; height: 100vh; min-height: 600px; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.hero-bg { position: absolute; inset: -10%; background-size: cover; background-position: center; filter: brightness(.38); will-change: transform; }
+.hero-bg::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E"); opacity: .5; }
+/* Ken Burns base, sobrescrito por JS al scrollear */
+@keyframes kenBurns { 0% { transform: scale(1); } 100% { transform: scale(1.1) translate(-1.5%,-0.5%); } }
+.hero-bg.kb-idle { animation: kenBurns 22s ease-in-out infinite alternate; }
+ 
+/* Spacer que empuja el contenido por debajo del hero fijo */
+.hero-spacer { height: 100vh; }
+ 
+/* Contenido hero */
+.hero-content { position: relative; z-index: 2; text-align: center; color: var(--blanco); padding: 2rem; will-change: opacity, transform; }
+.hero-eyebrow { font-family: var(--cuerpo); font-size: .65rem; font-weight: 500; letter-spacing: .35em; text-transform: uppercase; color: var(--dorado); margin-bottom: 1.5rem; animation: fadeUp 1.6s ease .3s forwards; opacity: 0; }
+.hero-title { font-family: var(--titulo); font-size: clamp(3.5rem,9vw,7rem); font-weight: 300; letter-spacing: .1em; line-height: 1; margin-bottom: 1.5rem; animation: fadeUp 1.6s ease .5s forwards; opacity: 0; }
+.hero-sub { font-family: var(--titulo); font-size: clamp(.95rem,2vw,1.25rem); font-weight: 300; font-style: italic; color: rgba(255,255,255,.75); margin-bottom: 3rem; animation: fadeUp 1.6s ease .7s forwards; opacity: 0; }
+.hero-cta { display: inline-block; font-family: var(--cuerpo); font-size: .65rem; font-weight: 500; letter-spacing: .25em; text-transform: uppercase; color: var(--blanco); text-decoration: none; border-bottom: 1px solid var(--dorado); padding-bottom: .4rem; animation: fadeUp 1.6s ease .9s forwards; opacity: 0; transition: color .3s; cursor: none; }
+.hero-cta:hover { color: var(--dorado); }
+@keyframes fadeUp { 0% { opacity:0; transform:translateY(30px); } 100% { opacity:1; transform:translateY(0); } }
+.scroll-hint { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; flex-direction: column; align-items: center; gap: .5rem; animation: fadeUp 1.6s ease 1.2s forwards; opacity: 0; }
+.scroll-hint span { font-family: var(--cuerpo); font-size: .55rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+.scroll-line { width: 1px; height: 50px; background: linear-gradient(to bottom,var(--dorado),transparent); animation: scrollPulse 2s ease-in-out infinite; }
+@keyframes scrollPulse { 0%,100% { opacity:.3; transform:scaleY(.7); } 50% { opacity:1; transform:scaleY(1); } }
+ 
+/* El contenido real del home va sobre el hero fijo */
+#home-body { position: relative; z-index: 2; margin-top: 0; }
+ 
+/* HERO INTERIOR (páginas internas) */
+.hero-interior { position: relative; height: 65vh; min-height: 450px; overflow: hidden; display: flex; align-items: flex-end; padding-bottom: 5rem; }
+.hero-interior .hero-bg { animation: kenBurns 25s ease-in-out infinite alternate; }
+.hero-interior .hero-content { text-align: left; padding: 0 4rem; }
+.hero-interior .hero-title { font-size: clamp(2.5rem,6vw,5rem); }
+.hero-badge { display: inline-block; font-family: var(--cuerpo); font-size: .55rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--dorado); border: 1px solid rgba(202,170,111,.4); padding: .4rem 1rem; margin-bottom: 1.2rem; animation: fadeUp 1.6s ease .2s forwards; opacity: 0; }
+ 
+/* WAVE */
+.wave-sep { width: 100%; overflow: hidden; line-height: 0; margin-top: -2px; }
+.wave-sep svg { display: block; width: 100%; }
+ 
+/* TEXTURA */
+.tex { position: relative; }
+.tex::before { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
+.tex > * { position: relative; z-index: 1; }
+ 
+/* SECTIONS */
+.section-dark { background: var(--verde); color: var(--blanco); padding: 8rem 3rem; }
+.section-darker { background: var(--footer); color: var(--blanco); padding: 8rem 3rem; }
+.section-light { background: var(--crema); padding: 8rem 3rem; }
+.section-white { background: var(--blanco); padding: 8rem 3rem; }
+.inner { max-width: 1100px; margin: 0 auto; }
+.inner-sm { max-width: 800px; margin: 0 auto; }
+ 
+/* TYPOGRAPHY */
+.label { font-family: var(--cuerpo); font-size: .6rem; font-weight: 500; letter-spacing: .4em; text-transform: uppercase; color: var(--dorado); margin-bottom: 1.5rem; display: block; }
+.h2 { font-family: var(--titulo); font-size: clamp(2rem,4.5vw,3.5rem); font-weight: 300; line-height: 1.15; margin-bottom: 1.5rem; }
+.h2 em { font-style: italic; color: var(--dorado); }
+.h2-dark { color: var(--verde); }
+.h2-light { color: var(--blanco); }
+.body-text { font-family: var(--cuerpo); font-size: .82rem; font-weight: 300; line-height: 1.9; color: rgba(255,255,255,.65); }
+.body-text-dark { color: rgba(64,90,92,.7); }
+.divider { width: 40px; height: 1px; background: var(--dorado); margin: 2rem 0; }
+.divider-center { margin: 2rem auto; }
+ 
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; border: 1px solid rgba(202,170,111,.2); margin-top: 4rem; }
+.stat-item { padding: 2.5rem 1rem; text-align: center; border-right: 1px solid rgba(202,170,111,.2); }
+.stat-item:last-child { border-right: none; }
+.stat-num { font-family: var(--titulo); font-size: 3rem; font-weight: 300; color: var(--dorado); line-height: 1; display: block; }
+.stat-label { font-family: var(--cuerpo); font-size: .58rem; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-top: .4rem; display: block; }
+.stat-label-dark { color: rgba(64,90,92,.5); }
+ 
+/* CARDS SERVICIOS HOME */
+.cards-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+.card { position: relative; overflow: hidden; aspect-ratio: 3/4; cursor: none; }
+.card-img { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform .8s cubic-bezier(.25,.46,.45,.94); filter: brightness(.5); }
+.card:hover .card-img { transform: scale(1.07); }
+.card-overlay { position: absolute; inset: 0; background: linear-gradient(to top,rgba(42,58,56,.95) 0%,rgba(42,58,56,.15) 60%,transparent 100%); }
+.card-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem; color: var(--blanco); }
+.card-num { font-family: var(--cuerpo); font-size: .55rem; font-weight: 500; letter-spacing: .3em; color: var(--dorado); display: block; margin-bottom: .5rem; }
+.card-title { font-family: var(--titulo); font-size: 1.8rem; font-weight: 400; line-height: 1.1; margin-bottom: .8rem; }
+.card-desc { font-family: var(--cuerpo); font-size: .72rem; font-weight: 300; line-height: 1.7; color: rgba(255,255,255,.7); opacity: 0; transform: translateY(10px); transition: opacity .4s ease .1s,transform .4s ease .1s; }
+.card:hover .card-desc { opacity: 1; transform: translateY(0); }
+.card-link { display: inline-block; margin-top: 1rem; font-family: var(--cuerpo); font-size: .6rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--dorado); border-bottom: 1px solid var(--dorado); padding-bottom: 2px; opacity: 0; transform: translateY(10px); transition: opacity .4s ease .2s,transform .4s ease .2s; cursor: none; text-decoration: none; }
+.card:hover .card-link { opacity: 1; transform: translateY(0); }
+ 
+/* GRID FEATURES */
+.features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+.feature-item { padding: 2.5rem; border: 1px solid rgba(202,170,111,.12); transition: border-color .4s,background .4s; }
+.feature-item:hover { border-color: rgba(202,170,111,.3); background: rgba(202,170,111,.04); }
+.feature-title { font-family: var(--titulo); font-size: 1.3rem; font-weight: 400; color: var(--blanco); margin-bottom: .8rem; }
+.feature-title-dark { color: var(--verde); }
+.feature-body { font-family: var(--cuerpo); font-size: .75rem; font-weight: 300; line-height: 1.8; color: rgba(255,255,255,.5); }
+.feature-body-dark { color: rgba(64,90,92,.65); }
+.feature-icon { font-family: var(--titulo); font-size: 2.5rem; font-weight: 300; color: var(--dorado); opacity: .4; margin-bottom: .8rem; }
+ 
+/* METODO GRID */
+.metodo-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 3px; }
+.metodo-item { padding: 3rem; border: 1px solid rgba(202,170,111,.12); position: relative; overflow: hidden; transition: border-color .4s,background .4s; }
+.metodo-item:hover { border-color: rgba(202,170,111,.35); background: rgba(202,170,111,.04); }
+.metodo-num { font-family: var(--titulo); font-size: 4rem; font-weight: 300; color: rgba(202,170,111,.15); position: absolute; top: 1rem; right: 1.5rem; line-height: 1; transition: color .4s; }
+.metodo-item:hover .metodo-num { color: rgba(202,170,111,.3); }
+.metodo-title { font-family: var(--titulo); font-size: 1.4rem; font-weight: 400; color: var(--blanco); margin-bottom: 1rem; }
+.metodo-body { font-family: var(--cuerpo); font-size: .75rem; font-weight: 300; line-height: 1.8; color: rgba(255,255,255,.5); }
+ 
+/* PARALLAX SECTION */
+.section-parallax { position: relative; padding: 8rem 3rem; overflow: hidden; }
+.parallax-bg { position: absolute; inset: -20%; background-size: cover; background-position: center; filter: brightness(.12); will-change: transform; }
+ 
+/* SERVICIOS LISTA */
+.servicios-lista { display: grid; grid-template-columns: repeat(2,1fr); gap: 2px; }
+.servicio-bloque { padding: 3rem; border: 1px solid rgba(202,170,111,.12); }
+.servicio-bloque-title { font-family: var(--titulo); font-size: 1.3rem; font-weight: 400; color: var(--blanco); margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(202,170,111,.2); }
+.servicio-bloque ul { list-style: none; }
+.servicio-bloque li { font-family: var(--cuerpo); font-size: .75rem; font-weight: 300; line-height: 1.8; color: rgba(255,255,255,.5); padding: .35rem 0; border-bottom: 1px solid rgba(255,255,255,.05); display: flex; align-items: center; gap: .8rem; }
+.servicio-bloque li::before { content: ''; width: 4px; height: 4px; background: var(--dorado); border-radius: 50%; flex-shrink: 0; }
+ 
+/* MODALIDADES */
+.modalidades-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 4rem; }
+.modalidad { padding: 3rem 2rem; border: 1px solid rgba(202,170,111,.15); text-align: center; position: relative; overflow: hidden; transition: border-color .4s, background .4s; }
+.modalidad:hover { border-color: rgba(202,170,111,.4); background: rgba(202,170,111,.05); }
+.modalidad-num { font-family: var(--titulo); font-size: 5rem; font-weight: 300; color: rgba(202,170,111,.1); line-height: 1; margin-bottom: 1rem; transition: color .4s; }
+.modalidad:hover .modalidad-num { color: rgba(202,170,111,.25); }
+.modalidad-title { font-family: var(--titulo); font-size: 1.5rem; font-weight: 400; color: var(--blanco); margin-bottom: 1rem; }
+.modalidad-body { font-family: var(--cuerpo); font-size: .72rem; font-weight: 300; line-height: 1.8; color: rgba(255,255,255,.45); }
+ 
+/* CTA CIERRE */
+.section-cierre { padding: 10rem 3rem; text-align: center; }
+.cierre-title { font-family: var(--titulo); font-size: clamp(2.2rem,5vw,4rem); font-weight: 300; color: var(--verde); line-height: 1.1; margin-bottom: 2rem; }
+.cierre-title em { font-style: italic; color: var(--dorado); }
+.cierre-body { font-family: var(--cuerpo); font-size: .8rem; font-weight: 300; color: rgba(64,90,92,.6); max-width: 440px; margin: 0 auto 3rem; line-height: 1.9; }
+.btn { display: inline-block; font-family: var(--cuerpo); font-size: .65rem; font-weight: 500; letter-spacing: .25em; text-transform: uppercase; padding: 1rem 2.5rem; text-decoration: none; transition: all .3s; cursor: none; }
+.btn-dark { color: var(--blanco); background: var(--verde); }
+.btn-dark:hover { background: var(--dorado); transform: translateY(-2px); }
+.btn-outline { color: var(--dorado); border: 1px solid var(--dorado); }
+.btn-outline:hover { background: var(--dorado); color: var(--blanco); }
+ 
+/* FOOTER */
+footer { background: var(--footer); padding: 4rem 3rem 2rem; position: relative; }
+footer::before { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E"); pointer-events: none; }
+.footer-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 2rem; padding-bottom: 3rem; border-bottom: 1px solid rgba(202,170,111,.15); margin-bottom: 2rem; }
+.footer-logo { font-family: var(--titulo); font-size: 2rem; font-weight: 300; letter-spacing: .2em; color: var(--blanco); }
+.footer-tagline { font-family: var(--titulo); font-size: .85rem; font-style: italic; color: rgba(255,255,255,.3); margin-top: .3rem; }
+.footer-nav { display: flex; flex-direction: column; gap: .5rem; }
+.footer-nav a { font-family: var(--cuerpo); font-size: .65rem; font-weight: 300; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.35); text-decoration: none; transition: color .3s; cursor: none; }
+.footer-nav a:hover { color: var(--dorado); }
+.footer-nav-label { font-family: var(--cuerpo); font-size: .55rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--dorado); margin-bottom: .5rem; }
+.footer-copy { text-align: center; font-family: var(--cuerpo); font-size: .6rem; font-weight: 300; letter-spacing: .15em; color: rgba(255,255,255,.2); position: relative; z-index: 1; }
+ 
+/* REVEAL */
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity .9s cubic-bezier(.25,.46,.45,.94),transform .9s cubic-bezier(.25,.46,.45,.94); }
+.reveal.d1 { transition-delay: .1s; }
+.reveal.d2 { transition-delay: .22s; }
+.reveal.d3 { transition-delay: .36s; }
+.reveal.d4 { transition-delay: .5s; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+ 
+/* DOS COLUMNAS */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+.two-col-img { aspect-ratio: 4/5; overflow: hidden; }
+.two-col-img img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.85); transition: transform .8s ease; }
+.two-col-img:hover img { transform: scale(1.04); }
+ 
+@media (max-width: 768px) {
+  nav { padding: 1.2rem 1.5rem; }
+  .nav-links { display: none; }
+  .cards-grid, .features-grid, .metodo-grid, .servicios-lista, .modalidades-grid, .two-col { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .hero-interior .hero-content { padding: 0 2rem; }
+}
+</style>
 </head>
 <body>
-  <div id="root"></div>
-
-  <script type="text/babel">
-    const { useState, useEffect, useCallback } = React;
-
-    const INIT_Z = [
-      { id:"Z-001", title:"Contenido RRSS — GastronomíaOrigen", area:"Contenido", status:"pendiente", priority:"Alta", deadline:"2026-04-07", empresa:"GastronomíaOrigen", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
-      { id:"Z-002", title:"Contenido RRSS — EspacioMenosUno", area:"Contenido", status:"pendiente", priority:"Alta", deadline:"2026-04-10", empresa:"EspacioMenosUno", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
-      { id:"Z-003", title:"Contenido RRSS — Barrancón", area:"Contenido", status:"pendiente", priority:"Alta", deadline:"2026-04-14", empresa:"Barrancón", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
-      { id:"Z-004", title:"Contenido RRSS — MapaMapa", area:"Contenido", status:"pendiente", priority:"Media", deadline:"2026-04-17", empresa:"MapaMapa", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
-      { id:"Z-005", title:"Contenido RRSS — CNC", area:"Contenido", status:"pendiente", priority:"Media", deadline:"2026-04-21", empresa:"CNC", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
-      { id:"Z-006", title:"Contenido RRSS — Rental La Fábrica", area:"Contenido", status:"pendiente", priority:"Media", deadline:"2026-04-24", empresa:"Rental La Fábrica", fase:"Fase 1: Contenido Foto", effort:"L", deliverable:"Grilla publicación", detail:"Crear contenido de fotografía, carrusel, stories. Definir si es para 15 o 30 días. Incluir mejoramiento con NanoBanana." },
-      { id:"Z-007", title:"Armar grilla mensual Abril — Todas", area:"Grilla", status:"pendiente", priority:"Alta", deadline:"2026-04-28", empresa:"Todas", fase:"Fase 1: Contenido Foto", effort:"M", deliverable:"Grilla completa mes", detail:"Consolidar todo el contenido en grilla mensual por marca." },
-      { id:"Z-008", title:"Aprobación grilla + ajustes", area:"Grilla", status:"pendiente", priority:"Alta", deadline:"2026-04-30", empresa:"Todas", fase:"Fase 1: Contenido Foto", effort:"XS", deliverable:"Grilla aprobada", detail:"Revisión con equipo, ajustes finales." },
-      { id:"Z-009", title:"Planificación Reels — Todas", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-05", empresa:"Todas", fase:"Fase 2: Videos / Reels", effort:"M", deliverable:"Plan de reels", detail:"Definir plataformas, formatos, guiones para formato reel." },
-      { id:"Z-010", title:"Producción Reels — GastronomíaOrigen", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-12", empresa:"GastronomíaOrigen", fase:"Fase 2: Videos / Reels", effort:"L", deliverable:"Reels editados", detail:"Grabación, edición y entrega de reels." },
-      { id:"Z-011", title:"Producción Reels — EspacioMenosUno", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-16", empresa:"EspacioMenosUno", fase:"Fase 2: Videos / Reels", effort:"L", deliverable:"Reels editados", detail:"Grabación, edición y entrega de reels." },
-      { id:"Z-012", title:"Producción Reels — Barrancón", area:"Video/Reel", status:"pendiente", priority:"Media", deadline:"2026-05-20", empresa:"Barrancón", fase:"Fase 2: Videos / Reels", effort:"L", deliverable:"Reels editados", detail:"Grabación, edición y entrega de reels." },
-      { id:"Z-013", title:"Producción Reels — MapaMapa+CNC+Rental", area:"Video/Reel", status:"pendiente", priority:"Baja", deadline:"2026-05-28", empresa:"Varias", fase:"Fase 2: Videos / Reels", effort:"XL", deliverable:"Reels x3 marcas", detail:"Producción de reels para las 3 marcas restantes." },
-      { id:"Z-014", title:"Grilla Mayo con Reels integrados", area:"Grilla", status:"pendiente", priority:"Alta", deadline:"2026-05-30", empresa:"Todas", fase:"Fase 2: Videos / Reels", effort:"M", deliverable:"Grilla foto+video", detail:"Integrar reels con fotos en grilla mensual unificada." },
-    ];
-
-    const INIT_W = [
-      { id:"W-001", title:"Revisión QA — GastronomíaOrigen", area:"QA Web", status:"en proceso", priority:"Alta", deadline:"2026-04-03", empresa:"GastronomíaOrigen", fase:"Fase 1: Webs Listas", effort:"S", deliverable:"Check QA", detail:"Web lista. Revisar responsive, velocidad, links, SEO.", note:"✅ LISTA" },
-      { id:"W-002", title:"Revisión QA — EspacioMenosUno", area:"QA Web", status:"en proceso", priority:"Alta", deadline:"2026-04-05", empresa:"EspacioMenosUno", fase:"Fase 1: Webs Listas", effort:"S", deliverable:"Check QA", detail:"Web lista. Revisar responsive, velocidad, links, SEO.", note:"✅ LISTA" },
-      { id:"W-003", title:"Revisión QA — Barrancón", area:"QA Web", status:"en proceso", priority:"Alta", deadline:"2026-04-07", empresa:"Barrancón", fase:"Fase 1: Webs Listas", effort:"S", deliverable:"Check QA", detail:"Web lista. Revisar responsive, velocidad, links, SEO.", note:"✅ LISTA" },
-      { id:"W-004", title:"Modificaciones — SimpleProducciones", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-04-14", empresa:"SimpleProducciones", fase:"Fase 2: Modificaciones", effort:"M", deliverable:"Web actualizada", detail:"Documentar cambios, implementar y testear.", note:"🔧 CAMBIOS" },
-      { id:"W-005", title:"Modificaciones — CNC", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-04-18", empresa:"CNC", fase:"Fase 2: Modificaciones", effort:"M", deliverable:"Web actualizada", detail:"Documentar cambios, implementar y testear.", note:"🔧 CAMBIOS" },
-      { id:"W-006", title:"Modificaciones — Rental La Fábrica", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-04-22", empresa:"Rental La Fábrica", fase:"Fase 2: Modificaciones", effort:"M", deliverable:"Web actualizada", detail:"Documentar cambios, implementar y testear.", note:"🔧 CAMBIOS" },
-      { id:"W-007", title:"Wireframes — ExBUNKER", area:"Diseño UX", status:"pendiente", priority:"Alta", deadline:"2026-04-28", empresa:"ExBUNKER", fase:"Fase 3: Web Nueva", effort:"M", deliverable:"Wireframes", detail:"Definir estructura, secciones, flujo." },
-      { id:"W-008", title:"Diseño visual — ExBUNKER", area:"Diseño UI", status:"pendiente", priority:"Alta", deadline:"2026-05-05", empresa:"ExBUNKER", fase:"Fase 3: Web Nueva", effort:"L", deliverable:"Mockups Figma", detail:"Diseño visual completo." },
-      { id:"W-009", title:"Desarrollo web — ExBUNKER", area:"Desarrollo", status:"pendiente", priority:"Alta", deadline:"2026-05-15", empresa:"ExBUNKER", fase:"Fase 3: Web Nueva", effort:"XL", deliverable:"Web online", detail:"Desarrollo, testing, deploy.", note:"🆕 NUEVA" },
-      { id:"W-010", title:"Setup Claude Code + Antigravity", area:"Automatización", status:"pendiente", priority:"Media", deadline:"2026-05-20", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"L", deliverable:"Entorno listo", detail:"Configurar IA para automatización marketing." },
-      { id:"W-011", title:"Automatizar creación imágenes", area:"Automatización", status:"pendiente", priority:"Media", deadline:"2026-05-25", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"L", deliverable:"Flujo imágenes", detail:"Pipeline imágenes marketing con IA." },
-      { id:"W-012", title:"Automatizar generación videos", area:"Automatización", status:"pendiente", priority:"Baja", deadline:"2026-06-02", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"XL", deliverable:"Pipeline video", detail:"Automatizar edición video con IA." },
-      { id:"W-013", title:"Automatizar campañas marketing", area:"Automatización", status:"pendiente", priority:"Media", deadline:"2026-06-10", empresa:"Todas", fase:"Fase 4: Automatizaciones", effort:"XL", deliverable:"Campañas auto", detail:"Segmentación, envío, seguimiento automático." },
-    ];
-
-    const STS = ["pendiente","en proceso","hecho"];
-    const SC = {
-      pendiente:{l:"Pendiente",bg:"#FEF3C7",c:"#92400E",dot:"#F59E0B",ico:"⏳"},
-      "en proceso":{l:"En Proceso",bg:"#DBEAFE",c:"#1E40AF",dot:"#3B82F6",ico:"🔄"},
-      hecho:{l:"Hecho",bg:"#D1FAE5",c:"#065F46",dot:"#10B981",ico:"✅"},
-    };
-    const PC = {Alta:{bg:"#FEE2E2",c:"#991B1B"},Media:{bg:"#FEF3C7",c:"#92400E"},Baja:{bg:"#F1F5F9",c:"#475569"}};
-    const EC = {"GastronomíaOrigen":"#7C3AED","EspacioMenosUno":"#DB2777","Barrancón":"#EA580C","MapaMapa":"#0891B2","CNC":"#65A30D","Rental La Fábrica":"#CA8A04","Todas":"#4F46E5","Varias":"#4F46E5","SimpleProducciones":"#0D9488","ExBUNKER":"#DC2626"};
-    const EFFORTS = {XS:2,S:4,M:7,L:10,XL:14};
-
-    const persist = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} };
-    const restore = (k,d) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : d; } catch(e) { return d; } };
-
-    // ── MODAL ──
-    function Modal({task,onClose,onSave,onDelete}) {
-      const [t,setT]=useState(null);
-      useEffect(()=>{if(task)setT({...task})},[task]);
-      if(!task||!t) return null;
-      const u=(k,v)=>setT(p=>({...p,[k]:v}));
-      const Field=({label,children})=>(
-        <div style={{marginBottom:14}}>
-          <label style={{fontSize:10,fontWeight:700,color:"#94A3B8",display:"block",marginBottom:4,letterSpacing:"0.8px",textTransform:"uppercase"}}>{label}</label>
-          {children}
-        </div>
-      );
-      const inp={width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid #E2E8F0",fontSize:13,fontFamily:"inherit",color:"#0F172A",background:"#FAFBFC",outline:"none",boxSizing:"border-box"};
-      return (
-        <div style={{position:"fixed",inset:0,background:"#00000050",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999,padding:16}} onClick={onClose}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:540,maxHeight:"92vh",overflow:"auto",boxShadow:"0 32px 100px #0003"}}>
-            <div style={{padding:"28px 32px 0"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontSize:10,fontWeight:800,color:"#94A3B8",letterSpacing:"1.5px",background:"#F1F5F9",padding:"3px 10px",borderRadius:6}}>{t.id}</span>
-                  <span style={{fontSize:10,fontWeight:600,color:EC[t.empresa]||"#64748B",background:`${EC[t.empresa]||"#64748B"}22`,padding:"3px 10px",borderRadius:6}}>{t.empresa}</span>
-                </div>
-                <button onClick={onClose} style={{background:"#F1F5F9",border:"none",width:32,height:32,borderRadius:8,fontSize:16,color:"#64748B",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
-              </div>
-              <input value={t.title} onChange={e=>u("title",e.target.value)} style={{width:"100%",fontSize:18,fontWeight:800,border:"none",outline:"none",color:"#0F172A",fontFamily:"inherit",marginBottom:20,padding:0,letterSpacing:"-0.3px",boxSizing:"border-box"}} />
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                <Field label="Estado">
-                  <div style={{display:"flex",gap:6}}>
-                    {STS.map(s=>{const cfg=SC[s];return(
-                      <button key={s} onClick={()=>u("status",s)} style={{flex:1,padding:"8px 4px",borderRadius:8,border:t.status===s?`2px solid ${cfg.dot}`:"1.5px solid #E2E8F0",background:t.status===s?cfg.bg:"#fff",color:t.status===s?cfg.c:"#94A3B8",fontSize:10,fontWeight:700,cursor:"pointer",transition:"all 0.15s"}}>{cfg.ico} {cfg.l}</button>
-                    )})}
-                  </div>
-                </Field>
-                <Field label="Prioridad">
-                  <select value={t.priority} onChange={e=>u("priority",e.target.value)} style={inp}>
-                    {["Alta","Media","Baja"].map(o=><option key={o}>{o}</option>)}
-                  </select>
-                </Field>
-                <Field label="Esfuerzo">
-                  <div style={{display:"flex",gap:4}}>
-                    {["XS","S","M","L","XL"].map(e=>(
-                      <button key={e} onClick={()=>u("effort",e)} style={{flex:1,padding:"8px 2px",borderRadius:6,border:t.effort===e?"2px solid #0F172A":"1.5px solid #E2E8F0",background:t.effort===e?"#0F172A":"#fff",color:t.effort===e?"#fff":"#64748B",fontSize:11,fontWeight:700,cursor:"pointer"}}>{e}</button>
-                    ))}
-                  </div>
-                </Field>
-                <Field label="Fecha límite">
-                  <input type="date" value={t.deadline} onChange={e=>u("deadline",e.target.value)} style={inp} />
-                </Field>
-                <Field label="Empresa">
-                  <input value={t.empresa} onChange={e=>u("empresa",e.target.value)} style={inp} />
-                </Field>
-                <Field label="Entregable">
-                  <input value={t.deliverable} onChange={e=>u("deliverable",e.target.value)} style={inp} />
-                </Field>
-              </div>
-              <Field label="Detalle / Notas (aquí puedes poner 'para 15 días', 'para 30 días', etc.)">
-                <textarea value={t.detail} onChange={e=>u("detail",e.target.value)} rows={4} style={{...inp,resize:"vertical",lineHeight:1.6}} />
-              </Field>
-            </div>
-            <div style={{padding:"16px 32px 24px",display:"flex",gap:10,justifyContent:"space-between",borderTop:"1px solid #F1F5F9"}}>
-              <button onClick={()=>{onDelete(t.id);onClose()}} style={{padding:"9px 18px",borderRadius:8,border:"1px solid #FEE2E2",background:"#FFF5F5",fontSize:12,fontWeight:600,cursor:"pointer",color:"#DC2626"}}>🗑 Eliminar</button>
-              <div style={{display:"flex",gap:8}}>
-                <button onClick={onClose} style={{padding:"9px 20px",borderRadius:8,border:"1px solid #E2E8F0",background:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",color:"#64748B"}}>Cancelar</button>
-                <button onClick={()=>{onSave(t);onClose()}} style={{padding:"9px 28px",borderRadius:8,border:"none",background:"#0F172A",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",letterSpacing:"0.3px"}}>Guardar ✓</button>
-              </div>
-            </div>
+ 
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+ 
+<nav id="navbar">
+  <a href="#" class="nav-logo" onclick="showPage('home');return false;">ORIGEN</a>
+  <ul class="nav-links">
+    <li><a href="#" id="nav-bodas" onclick="showPage('bodas');return false;">Bodas</a></li>
+    <li><a href="#" id="nav-corporativo" onclick="showPage('corporativo');return false;">Corporativo</a></li>
+    <li><a href="#" id="nav-producciones" onclick="showPage('producciones');return false;">Producciones</a></li>
+  </ul>
+  <a href="#" class="nav-cta" onclick="scrollToCierre();return false;">Agendar Reunión</a>
+</nav>
+ 
+<!-- ==================== HOME ==================== -->
+<div class="page active" id="page-home">
+  <!-- Hero fijo en background -->
+  <section class="hero" id="hero-home">
+    <div class="hero-bg kb-idle" id="heroBg" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&q=85');"></div>
+    <div class="hero-content" id="heroContent">
+      <p class="hero-eyebrow">Banquetería & Eventos · Chile</p>
+      <h1 class="hero-title">ORIGEN</h1>
+      <p class="hero-sub">Alta cocina y producción integral<br>para eventos que trascienden.</p>
+      <a href="#" class="hero-cta" id="heroDescubrir" onclick="triggerHeroZoom();return false;">Descubrir</a>
+    </div>
+    <div class="scroll-hint" id="scrollHint"><span>Desliza</span><div class="scroll-line"></div></div>
+  </section>
+ 
+  <!-- Spacer que ocupa el alto de la ventana -->
+  <div class="hero-spacer"></div>
+ 
+  <!-- Todo el contenido del home va aquí, sobre el hero fijo -->
+  <div id="home-body">
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 60" preserveAspectRatio="none" style="height:60px;"><path d="M0,0 C360,60 1080,0 1440,40 L1440,0 Z" fill="#405a5c"/></svg>
+  </div>
+ 
+  <section class="section-dark tex" id="home-quienes">
+    <div class="parallax-bg" id="parallaxBg" style="background-image:url('https://images.unsplash.com/photo-1495908333425-29a1e0918c5f?w=1400&q=80');"></div>
+    <div class="inner-sm" style="text-align:center;position:relative;z-index:2;">
+      <span class="label reveal">Quiénes Somos</span>
+      <h2 class="h2 h2-light reveal d1">Más de <em>20 años</em><br>creando momentos inolvidables</h2>
+      <div class="divider divider-center reveal d2"></div>
+      <p class="body-text reveal d3" style="max-width:580px;margin:0 auto 2rem;">Somos una firma gastronómica que integra cocina de alto estándar con planificación técnica y supervisión integral. Cultivamos parte de nuestros propios ingredientes: hierbas aromáticas, vegetales y productos de estación frescos desde la tierra directamente a la cocina.</p>
+      <div class="stats-grid reveal d4" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-item"><span class="stat-num" data-target="20" data-suffix="+">0</span><span class="stat-label">Años de trayectoria</span></div>
+        <div class="stat-item"><span class="stat-num" data-target="2" data-suffix="K+">0</span><span class="stat-label">Eventos ejecutados</span></div>
+        <div class="stat-item"><span class="stat-num" data-target="500" data-suffix="K+">0</span><span class="stat-label">Invitados atendidos</span></div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--verde);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,70 C480,0 960,70 1440,20 L1440,70 Z" fill="#f0efe6"/></svg>
+  </div>
+ 
+  <section class="section-light tex">
+    <div class="inner">
+      <div style="text-align:center;margin-bottom:5rem;">
+        <span class="label reveal" style="color:var(--dorado);">Nuestras Áreas</span>
+        <h2 class="h2 h2-dark reveal d1">Tres maneras de crear <em>experiencias</em></h2>
+      </div>
+      <div class="cards-grid reveal d2">
+        <div class="card" onclick="showPage('bodas')">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80');"></div>
+          <div class="card-overlay"></div>
+          <div class="card-content">
+            <span class="card-num">01 · ORIGEN</span>
+            <h3 class="card-title">Bodas</h3>
+            <p class="card-desc">Alta cocina y producción para matrimonios cuidadosamente diseñados. Cada detalle, una declaración.</p>
+            <a href="#" class="card-link" onclick="showPage('bodas');return false;">Ver más</a>
           </div>
         </div>
-      );
+        <div class="card" onclick="showPage('corporativo')">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=800&q=80');"></div>
+          <div class="card-overlay"></div>
+          <div class="card-content">
+            <span class="card-num">02 · ORIGEN</span>
+            <h3 class="card-title">Corporativo</h3>
+            <p class="card-desc">Catering profesional para eventos empresariales de alto estándar. Precisión en cada servicio.</p>
+            <a href="#" class="card-link" onclick="showPage('corporativo');return false;">Ver más</a>
+          </div>
+        </div>
+        <div class="card" onclick="showPage('producciones')">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&q=80');"></div>
+          <div class="card-overlay"></div>
+          <div class="card-content">
+            <span class="card-num">03 · ORIGEN</span>
+            <h3 class="card-title">Producciones</h3>
+            <p class="card-desc">Producción técnica y ejecución integral de eventos. Del concepto a la experiencia final.</p>
+            <a href="#" class="card-link" onclick="showPage('producciones');return false;">Ver más</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,0 C720,70 1080,0 1440,50 L1440,70 L0,70 Z" fill="#2a3a38"/></svg>
+  </div>
+ 
+  <section class="section-darker tex">
+    <div class="inner">
+      <div style="text-align:center;margin-bottom:5rem;">
+        <span class="label reveal">Metodología</span>
+        <h2 class="h2 h2-light reveal d1">Ingeniería aplicada a la <em>producción</em></h2>
+      </div>
+      <div class="metodo-grid">
+        <div class="metodo-item reveal d1"><span class="metodo-num">01</span><h3 class="metodo-title">Cadena de frío</h3><p class="metodo-body">Control estricto de temperatura desde la recepción hasta el servicio. Monitoreo constante que garantiza inocuidad en cada plato.</p></div>
+        <div class="metodo-item reveal d2"><span class="metodo-num">02</span><h3 class="metodo-title">Trazabilidad total</h3><p class="metodo-body">Cada ingrediente tiene historia. Proveedores certificados, origen documentado, calidad garantizada de principio a fin.</p></div>
+        <div class="metodo-item reveal d3"><span class="metodo-num">03</span><h3 class="metodo-title">Huertas propias</h3><p class="metodo-body">Hierbas, vegetales y productos frescos cultivados por nosotros. Del campo a la mesa, con ciclo completo bajo nuestro control.</p></div>
+        <div class="metodo-item reveal d4"><span class="metodo-num">04</span><h3 class="metodo-title">Equipo profesional</h3><p class="metodo-body">Chef ejecutivo, capitán de mesas, garzones y producción. Cada rol definido para una ejecución impecable.</p></div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--footer);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,70 C360,0 1080,70 1440,20 L1440,70 Z" fill="#f0efe6"/></svg>
+  </div>
+ 
+  <section class="section-cierre tex" id="home-cierre">
+    <span class="label reveal" style="color:var(--dorado);display:block;text-align:center;">Contacto</span>
+    <h2 class="cierre-title reveal d1">Conversemos sobre<br>tu <em>próximo evento</em></h2>
+    <div class="divider divider-center reveal d2"></div>
+    <p class="cierre-body reveal d3">Cada evento comienza con una reunión. Cuéntanos tu visión y construimos juntos la experiencia que merece.</p>
+    <a href="#" class="btn btn-dark reveal d4">Agendar reunión</a>
+  </section>
+ 
+  </div><!-- /home-body -->
+ 
+  <footer>
+    <div class="footer-inner">
+      <div><div class="footer-logo">ORIGEN</div><div class="footer-tagline">Alta cocina · Producción · Eventos</div></div>
+      <div>
+        <div class="footer-nav-label">Áreas</div>
+        <nav class="footer-nav">
+          <a href="#" onclick="showPage('bodas');return false;">Bodas</a>
+          <a href="#" onclick="showPage('corporativo');return false;">Corporativo</a>
+          <a href="#" onclick="showPage('producciones');return false;">Producciones</a>
+        </nav>
+      </div>
+    </div>
+    <p class="footer-copy">© 2025 Gastronomía Origen · Todos los derechos reservados</p>
+  </footer>
+</div>
+ 
+<!-- ==================== BODAS ==================== -->
+<div class="page" id="page-bodas">
+  <section class="hero-interior">
+    <div class="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1800&q=80');filter:brightness(.35);"></div>
+    <div class="hero-content">
+      <span class="hero-badge">ORIGEN BODAS</span>
+      <h1 class="hero-title">Catering de alta cocina<br>para matrimonios <em style="font-style:italic;">cuidadosamente</em><br>diseñados</h1>
+      <p class="hero-sub" style="margin-bottom:0;">Menús personalizados con materias primas seleccionadas y ejecución impecable.</p>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 60" preserveAspectRatio="none" style="height:60px;"><path d="M0,0 C360,60 1080,0 1440,40 L1440,0 Z" fill="#405a5c"/></svg>
+  </div>
+ 
+  <section class="section-dark tex">
+    <div class="inner">
+      <div class="two-col">
+        <div>
+          <span class="label reveal">Nuestra Filosofía</span>
+          <h2 class="h2 h2-light reveal d1">Producto antes<br>que <em>discurso</em></h2>
+          <div class="divider reveal d2"></div>
+          <p class="body-text reveal d3">En ORIGEN no vendemos promesas. Trabajamos con producto fresco, seleccionado y de temporada. La calidad de lo que servimos no depende del presupuesto del evento: depende de nuestros estándares.</p>
+          <p class="body-text reveal d3" style="margin-top:1rem;">Cada menú es diseñado con criterio técnico y coherencia gastronómica. No adaptamos recetas genéricas. Construimos propuestas que tienen sentido culinario, estético y logístico.</p>
+        </div>
+        <div class="two-col-img reveal d2">
+          <img src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800&q=80" alt="Alta cocina ORIGEN">
+        </div>
+      </div>
+      <div class="stats-grid" style="margin-top:5rem;">
+        <div class="stat-item"><span class="stat-num">+150</span><span class="stat-label">Matrimonios ejecutados</span></div>
+        <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label">Supervisión en terreno</span></div>
+        <div class="stat-item"><span class="stat-num">+8</span><span class="stat-label">Años de experiencia</span></div>
+        <div class="stat-item"><span class="stat-num">24h</span><span class="stat-label">Respuesta garantizada</span></div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--verde);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,70 C480,0 960,70 1440,20 L1440,70 Z" fill="#f0efe6"/></svg>
+  </div>
+ 
+  <section class="section-light tex">
+    <div class="inner">
+      <div style="text-align:center;margin-bottom:5rem;">
+        <span class="label reveal" style="color:var(--dorado);">Experiencia y Criterio</span>
+        <h2 class="h2 h2-dark reveal d1">Por qué los novios<br>eligen <em>ORIGEN</em></h2>
+        <p class="body-text body-text-dark reveal d2" style="max-width:520px;margin:0 auto;">No somos el proveedor más barato. Somos el equipo que garantiza que el día más importante de su vida tenga la ejecución que merece.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-item reveal d1"><div class="feature-icon">✦</div><h3 class="feature-title feature-title-dark">Experiencia comprobada</h3><p class="feature-body feature-body-dark">Más de 150 matrimonios ejecutados en distintos formatos, tamaños y locaciones a lo largo de Chile.</p></div>
+        <div class="feature-item reveal d2"><div class="feature-icon">✦</div><h3 class="feature-title feature-title-dark">Menús a medida</h3><p class="feature-body feature-body-dark">Cada propuesta gastronómica es diseñada específicamente para el evento, sin plantillas genéricas.</p></div>
+        <div class="feature-item reveal d3"><div class="feature-icon">✦</div><h3 class="feature-title feature-title-dark">Coordinación integral</h3><p class="feature-body feature-body-dark">Desde la primera reunión hasta el último plato. Un equipo dedicado que no improvisar el día del evento.</p></div>
+        <div class="feature-item reveal d1"><div class="feature-icon">✦</div><h3 class="feature-title feature-title-dark">Producto seleccionado</h3><p class="feature-body feature-body-dark">Ingredientes frescos, de temporada y proveedores certificados. La calidad comienza antes de la cocina.</p></div>
+        <div class="feature-item reveal d2"><div class="feature-icon">✦</div><h3 class="feature-title feature-title-dark">Ejecución impecable</h3><p class="feature-body feature-body-dark">Chef ejecutivo y capitán de mesas presentes. Cada variable del servicio bajo control profesional.</p></div>
+        <div class="feature-item reveal d3"><div class="feature-icon">✦</div><h3 class="feature-title feature-title-dark">Respuesta garantizada</h3><p class="feature-body feature-body-dark">Respuesta en menos de 24 horas. Comunicación directa, transparente y sin intermediarios.</p></div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,0 C720,70 1080,0 1440,50 L1440,70 L0,70 Z" fill="#2a3a38"/></svg>
+  </div>
+ 
+  <section class="section-cierre tex" style="background:var(--footer);">
+    <span class="label reveal" style="color:var(--dorado);display:block;text-align:center;">Bodas</span>
+    <h2 class="cierre-title reveal d1" style="color:var(--blanco);">Conversemos sobre<br>tu <em>matrimonio</em></h2>
+    <div class="divider divider-center reveal d2"></div>
+    <p class="cierre-body reveal d3" style="color:rgba(255,255,255,.5);">Cada matrimonio comienza con una primera reunión. Cuéntanos tu visión y construimos juntos la experiencia que merece.</p>
+    <a href="#" class="btn btn-outline reveal d4">Agendar reunión</a>
+  </section>
+ 
+  <footer>
+    <div class="footer-inner">
+      <div><div class="footer-logo">ORIGEN</div><div class="footer-tagline">Alta cocina · Producción · Eventos</div></div>
+      <div>
+        <div class="footer-nav-label">Áreas</div>
+        <nav class="footer-nav">
+          <a href="#" onclick="showPage('home');return false;">Inicio</a>
+          <a href="#" onclick="showPage('corporativo');return false;">Corporativo</a>
+          <a href="#" onclick="showPage('producciones');return false;">Producciones</a>
+        </nav>
+      </div>
+    </div>
+    <p class="footer-copy">© 2025 Gastronomía Origen · Todos los derechos reservados</p>
+  </footer>
+</div>
+ 
+<!-- ==================== CORPORATIVO ==================== -->
+<div class="page" id="page-corporativo">
+  <section class="hero-interior">
+    <div class="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1800&q=80');filter:brightness(.3);"></div>
+    <div class="hero-content">
+      <span class="hero-badge">ORIGEN CORPORATIVO</span>
+      <h1 class="hero-title">Catering profesional<br>para eventos <em style="font-style:italic;">corporativos</em></h1>
+      <p class="hero-sub" style="margin-bottom:0;">Ejecución precisa, cumplimiento estricto y capacidad operativa para eventos de cualquier escala.</p>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 60" preserveAspectRatio="none" style="height:60px;"><path d="M0,0 C360,60 1080,0 1440,40 L1440,0 Z" fill="#405a5c"/></svg>
+  </div>
+ 
+  <section class="section-dark tex">
+    <div class="inner">
+      <div style="text-align:center;margin-bottom:5rem;">
+        <span class="label reveal">Enfoque Operativo</span>
+        <h2 class="h2 h2-light reveal d1">Estructura y capacidad para eventos<br>que no admiten <em>errores</em></h2>
+        <p class="body-text reveal d2" style="max-width:600px;margin:0 auto;">En el entorno corporativo, la ejecución impecable no es un diferencial: es el mínimo exigible. ORIGEN opera con procesos definidos, equipos entrenados y una cadena de supervisión que garantiza resultados consistentes.</p>
+      </div>
+      <div class="features-grid" style="border:1px solid rgba(202,170,111,.1);">
+        <div class="feature-item reveal d1"><h3 class="feature-title">Escala operativa real</h3><p class="feature-body">Capacidad para atender desde 30 hasta 1.200 personas con el mismo estándar de ejecución y supervisión.</p></div>
+        <div class="feature-item reveal d2"><h3 class="feature-title">Puntualidad y protocolo</h3><p class="feature-body">Cumplimiento estricto de cronogramas. Cada etapa del servicio está coordinada con precisión.</p></div>
+        <div class="feature-item reveal d3"><h3 class="feature-title">Propuesta estructurada</h3><p class="feature-body">Documentación clara: menú, logística, personal asignado, tiempos y presupuesto detallado.</p></div>
+        <div class="feature-item reveal d1"><h3 class="feature-title">Equipo profesional</h3><p class="feature-body">Personal capacitado, uniformado y con experiencia en entornos corporativos exigentes.</p></div>
+        <div class="feature-item reveal d2"><h3 class="feature-title">Supervisión en terreno</h3><p class="feature-body">Un coordinador ORIGEN presente durante toda la ejecución del evento.</p></div>
+        <div class="feature-item reveal d3"><h3 class="feature-title">Adaptabilidad técnica</h3><p class="feature-body">Nos ajustamos a los requerimientos del espacio, el formato y los protocolos de cada empresa.</p></div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--verde);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,70 C480,0 960,70 1440,20 L1440,70 Z" fill="#f0efe6"/></svg>
+  </div>
+ 
+  <section class="section-light tex">
+    <div class="inner">
+      <div style="text-align:center;margin-bottom:5rem;">
+        <span class="label reveal" style="color:var(--dorado);">Propuesta Gastronómica</span>
+        <h2 class="h2 h2-dark reveal d1">Formatos diseñados para cada tipo<br>de evento <em>corporativo</em></h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature-item reveal d1"><h3 class="feature-title feature-title-dark">Coffee Break</h3><p class="feature-body feature-body-dark">Pausas con detalle. Dulces, salados y bebidas calientes presentados con cuidado artesanal. Ideal para descansos corporativos que dejan huella.</p></div>
+        <div class="feature-item reveal d2"><h3 class="feature-title feature-title-dark">Almuerzo Ejecutivo</h3><p class="feature-body feature-body-dark">Menú completo con opciones diferenciadas para audiencias de alto nivel. Presentación impecable y servicio a la mesa.</p></div>
+        <div class="feature-item reveal d3"><h3 class="feature-title feature-title-dark">Cóctel de Networking</h3><p class="feature-body feature-body-dark">Formato dinámico para eventos de relacionamiento. Finger food, estaciones temáticas y bebidas seleccionadas.</p></div>
+        <div class="feature-item reveal d1"><h3 class="feature-title feature-title-dark">Buffet Corporativo</h3><p class="feature-body feature-body-dark">Servicio de autoservicio con estaciones organizadas. Capacidad para grandes grupos sin sacrificar calidad.</p></div>
+        <div class="feature-item reveal d2"><h3 class="feature-title feature-title-dark">Gala Empresarial</h3><p class="feature-body feature-body-dark">Cena de gala con protocolo completo. Servicio francés, sommelier y coordinación integral del evento.</p></div>
+        <div class="feature-item reveal d3"><h3 class="feature-title feature-title-dark">Lanzamientos</h3><p class="feature-body feature-body-dark">Propuesta gastronómica alineada a la identidad del evento. Experiencia diseñada para reforzar el mensaje de marca.</p></div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,0 C720,70 1080,0 1440,50 L1440,70 L0,70 Z" fill="#2a3a38"/></svg>
+  </div>
+ 
+  <section class="section-cierre tex" style="background:var(--footer);">
+    <span class="label reveal" style="color:var(--dorado);display:block;text-align:center;">Corporativo</span>
+    <h2 class="cierre-title reveal d1" style="color:var(--blanco);">Conversemos sobre<br>tu <em>próximo evento empresarial</em></h2>
+    <div class="divider divider-center reveal d2"></div>
+    <p class="cierre-body reveal d3" style="color:rgba(255,255,255,.5);">Trabajamos con empresas, instituciones y organizaciones que requieren un proveedor confiable, documentado y con capacidad de respuesta real.</p>
+    <a href="#" class="btn btn-outline reveal d4">Solicitar propuesta</a>
+  </section>
+ 
+  <footer>
+    <div class="footer-inner">
+      <div><div class="footer-logo">ORIGEN</div><div class="footer-tagline">Alta cocina · Producción · Eventos</div></div>
+      <div>
+        <div class="footer-nav-label">Áreas</div>
+        <nav class="footer-nav">
+          <a href="#" onclick="showPage('home');return false;">Inicio</a>
+          <a href="#" onclick="showPage('bodas');return false;">Bodas</a>
+          <a href="#" onclick="showPage('producciones');return false;">Producciones</a>
+        </nav>
+      </div>
+    </div>
+    <p class="footer-copy">© 2025 Gastronomía Origen · Todos los derechos reservados</p>
+  </footer>
+</div>
+ 
+<!-- ==================== PRODUCCIONES ==================== -->
+<div class="page" id="page-producciones">
+  <section class="hero-interior">
+    <div class="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=1800&q=80');filter:brightness(.3);"></div>
+    <div class="hero-content">
+      <span class="hero-badge">ORIGEN PRODUCCIONES</span>
+      <h1 class="hero-title">Producción técnica y<br>ejecución <em style="font-style:italic;">integral</em><br>de eventos</h1>
+      <p class="hero-sub" style="margin-bottom:0;">Infraestructura, coordinación y supervisión profesional para eventos que requieren planificación rigurosa.</p>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 60" preserveAspectRatio="none" style="height:60px;"><path d="M0,0 C360,60 1080,0 1440,40 L1440,0 Z" fill="#405a5c"/></svg>
+  </div>
+ 
+  <section class="section-dark tex">
+    <div class="inner">
+      <div class="two-col">
+        <div>
+          <span class="label reveal">Quiénes Somos</span>
+          <h2 class="h2 h2-light reveal d1">El área <em>técnica</em><br>y operativa de ORIGEN</h2>
+          <div class="divider reveal d2"></div>
+          <p class="body-text reveal d3">ORIGEN Producciones es el área técnica y operativa de nuestra firma, especializada en la planificación, coordinación y ejecución integral de eventos de alto estándar.</p>
+          <p class="body-text reveal d3" style="margin-top:1rem;">Contamos con infraestructura propia, equipos profesionales y capacidad operativa para desarrollar proyectos que requieren supervisión técnica, logística estructurada y ejecución impecable.</p>
+        </div>
+        <div class="two-col-img reveal d2">
+          <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80" alt="Producción ORIGEN">
+        </div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--verde);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,70 C480,0 960,70 1440,20 L1440,70 Z" fill="#f0efe6"/></svg>
+  </div>
+ 
+  <section class="section-light tex">
+    <div class="inner">
+      <div style="text-align:center;margin-bottom:5rem;">
+        <span class="label reveal" style="color:var(--dorado);">Servicios Técnicos</span>
+        <h2 class="h2 h2-dark reveal d1">Infraestructura y coordinación<br>para eventos de <em>alto estándar</em></h2>
+      </div>
+      <div class="servicios-lista">
+        <div class="servicio-bloque reveal d1">
+          <h3 class="servicio-bloque-title" style="color:var(--verde);">Mobiliario y Equipamiento</h3>
+          <ul>
+            <li>Mesas, sillas y mantelerías</li>
+            <li>Vajilla, cristalería y cubiertos</li>
+            <li>Equipamiento de cocina profesional</li>
+            <li>Elementos de servicio y presentación</li>
+          </ul>
+        </div>
+        <div class="servicio-bloque reveal d2">
+          <h3 class="servicio-bloque-title" style="color:var(--verde);">Montaje y Ambientación</h3>
+          <ul>
+            <li>Diseño de espacios y distribución</li>
+            <li>Iluminación técnica y ambiental</li>
+            <li>Señalética y elementos gráficos</li>
+            <li>Coordinación de proveedores especializados</li>
+          </ul>
+        </div>
+        <div class="servicio-bloque reveal d3">
+          <h3 class="servicio-bloque-title" style="color:var(--verde);">Logística y Operaciones</h3>
+          <ul>
+            <li>Transporte y almacenamiento</li>
+            <li>Coordinación de equipos técnicos</li>
+            <li>Gestión de tiempos y cronogramas</li>
+            <li>Supervisión en terreno</li>
+          </ul>
+        </div>
+        <div class="servicio-bloque reveal d4">
+          <h3 class="servicio-bloque-title" style="color:var(--verde);">Coordinación Integral</h3>
+          <ul>
+            <li>Reuniones de planificación</li>
+            <li>Coordinación con locación</li>
+            <li>Gestión de permisos y autorizaciones</li>
+            <li>Protocolo y ceremonial</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--crema);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,0 C720,70 1080,0 1440,50 L1440,70 L0,70 Z" fill="#2a3a38"/></svg>
+  </div>
+ 
+  <section class="section-darker tex">
+    <div class="inner">
+      <div style="text-align:center;margin-bottom:2rem;">
+        <span class="label reveal">Producción Integral</span>
+        <h2 class="h2 h2-light reveal d1">Tres modalidades de servicio<br>según el nivel de <em>coordinación</em></h2>
+      </div>
+      <div class="modalidades-grid">
+        <div class="modalidad reveal d1"><div class="modalidad-num">01</div><h3 class="modalidad-title">Asistencia Técnica</h3><p class="modalidad-body">Apoyo operativo puntual. Equipamiento, personal técnico y coordinación específica para complementar producción existente.</p></div>
+        <div class="modalidad reveal d2"><div class="modalidad-num">02</div><h3 class="modalidad-title">Producción Parcial</h3><p class="modalidad-body">Coordinación de áreas específicas del evento. Gastronomía, montaje o logística bajo supervisión ORIGEN.</p></div>
+        <div class="modalidad reveal d3"><div class="modalidad-num">03</div><h3 class="modalidad-title">Producción Total</h3><p class="modalidad-body">Planificación, coordinación y ejecución integral. Un solo interlocutor responsable de todo el evento.</p></div>
+      </div>
+    </div>
+  </section>
+ 
+  <div class="wave-sep" style="background:var(--footer);">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" style="height:70px;"><path d="M0,70 C360,0 1080,70 1440,20 L1440,70 Z" fill="#f0efe6"/></svg>
+  </div>
+ 
+  <section class="section-cierre tex">
+    <span class="label reveal" style="color:var(--dorado);display:block;text-align:center;">Producciones</span>
+    <h2 class="cierre-title reveal d1">Hablemos de tu<br><em>próxima producción</em></h2>
+    <div class="divider divider-center reveal d2"></div>
+    <p class="cierre-body reveal d3">Trabajamos con criterio técnico, planificación rigurosa y coordinación profesional. Sin improvisaciones.</p>
+    <a href="#" class="btn btn-dark reveal d4">Agendar reunión técnica</a>
+  </section>
+ 
+  <footer>
+    <div class="footer-inner">
+      <div><div class="footer-logo">ORIGEN</div><div class="footer-tagline">Alta cocina · Producción · Eventos</div></div>
+      <div>
+        <div class="footer-nav-label">Áreas</div>
+        <nav class="footer-nav">
+          <a href="#" onclick="showPage('home');return false;">Inicio</a>
+          <a href="#" onclick="showPage('bodas');return false;">Bodas</a>
+          <a href="#" onclick="showPage('corporativo');return false;">Corporativo</a>
+        </nav>
+      </div>
+    </div>
+    <p class="footer-copy">© 2025 Gastronomía Origen · Todos los derechos reservados</p>
+  </footer>
+</div>
+ 
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+function animCursor(){
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+function addHover(el){ el.addEventListener('mouseenter',()=>{cursor.classList.add('hover');ring.classList.add('hover');}); el.addEventListener('mouseleave',()=>{cursor.classList.remove('hover');ring.classList.remove('hover');}); }
+document.querySelectorAll('a,button,.card,.feature-item,.metodo-item,.modalidad,.servicio-bloque').forEach(addHover);
+ 
+// HERO SCROLL-ZOOM
+// El hero está fixed. Al scrollear, la bg hace zoom-in y el contenido se desvanece.
+// Cuando el scroll supera 100vh, el hero se oculta y el contenido toma el relevo.
+const heroBg = document.getElementById('heroBg');
+const heroContent = document.getElementById('heroContent');
+const scrollHint = document.getElementById('scrollHint');
+const heroEl = document.getElementById('hero-home');
+ 
+function updateHeroOnScroll(){
+  const activePage = document.querySelector('.page.active').id;
+  if(activePage !== 'page-home') return;
+ 
+  const scrollY = window.scrollY;
+  const vh = window.innerHeight;
+  // progress: 0 en tope, 1 cuando el scroll llega al final del spacer
+  const progress = Math.min(scrollY / vh, 1);
+ 
+  // zoom: escala de 1 a 1.25
+  const scale = 1 + progress * 0.25;
+  // quitar animación KB mientras hace scroll
+  if(progress > 0.01){
+    heroBg.classList.remove('kb-idle');
+    heroBg.style.animation = 'none';
+  } else {
+    heroBg.classList.add('kb-idle');
+    heroBg.style.animation = '';
+  }
+  heroBg.style.transform = `scale(${scale})`;
+  heroBg.style.filter = `brightness(${0.38 + progress * 0.25})`;
+ 
+  // contenido hero: fade out + sube
+  const contentOpacity = Math.max(1 - progress * 2.5, 0);
+  const contentY = -progress * 60;
+  heroContent.style.opacity = contentOpacity;
+  heroContent.style.transform = `translateY(${contentY}px)`;
+  scrollHint.style.opacity = Math.max(1 - progress * 4, 0);
+ 
+  // ocultar hero fijo cuando ya no es necesario
+  heroEl.style.visibility = progress >= 1 ? 'hidden' : 'visible';
+}
+ 
+window.addEventListener('scroll', updateHeroOnScroll, {passive:true});
+ 
+// Botón Descubrir: zoom dramático y scroll rápido
+function triggerHeroZoom(){
+  heroBg.classList.remove('kb-idle');
+  heroBg.style.transition = 'transform 1.1s cubic-bezier(.4,0,.2,1), filter 1.1s ease';
+  heroBg.style.transform = 'scale(1.35)';
+  heroBg.style.filter = 'brightness(0.7)';
+  heroContent.style.transition = 'opacity .7s ease, transform .7s ease';
+  heroContent.style.opacity = '0';
+  heroContent.style.transform = 'translateY(-50px) scale(0.96)';
+  scrollHint.style.transition = 'opacity .4s ease';
+  scrollHint.style.opacity = '0';
+  setTimeout(()=>{
+    heroBg.style.transition = '';
+    heroContent.style.transition = '';
+    scrollHint.style.transition = '';
+    window.scrollTo({top: window.innerHeight, behavior:'smooth'});
+  }, 850);
+}
+ 
+// PAGES
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+ 
+  // reset hero si volvemos al home
+  if(name === 'home'){
+    heroBg.classList.add('kb-idle');
+    heroBg.style.animation = '';
+    heroBg.style.transform = '';
+    heroBg.style.filter = '';
+    heroContent.style.opacity = '';
+    heroContent.style.transform = '';
+    scrollHint.style.opacity = '';
+    heroEl.style.visibility = 'visible';
+  }
+ 
+  // nav
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+name);
+  if(navEl) navEl.classList.add('active');
+  const nav = document.getElementById('navbar');
+  nav.classList.remove('scrolled');
+  name !== 'home' ? nav.classList.add('dark') : nav.classList.remove('dark');
+  setTimeout(initReveal, 100);
+  setTimeout(initParallax, 100);
+}
+ 
+// NAVBAR SCROLL
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+ 
+// PARALLAX
+function initParallax(){
+  const pb = document.getElementById('parallaxBg');
+  if(!pb) return;
+  const handler = ()=>{
+    const section = pb.closest('section');
+    if(!section) return;
+    const rect = section.getBoundingClientRect();
+    const progress = -rect.top/(rect.height+window.innerHeight);
+    pb.style.transform = `translateY(${progress*30}%)`;
+  };
+  window.addEventListener('scroll', handler, {passive:true});
+}
+initParallax();
+ 
+// SCROLL REVEAL
+function initReveal(){
+  const reveals = document.querySelectorAll('.page.active .reveal');
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+  },{threshold:.12});
+  reveals.forEach(el=>{ el.classList.remove('visible'); obs.observe(el); });
+}
+initReveal();
+ 
+// CONTADORES
+function animateCounter(el){
+  const raw = el.dataset.target;
+  const suffix = el.dataset.suffix||'';
+  const target = parseFloat(raw);
+  const duration = 1800;
+  const start = performance.now();
+  function update(now){
+    const t = Math.min((now-start)/duration,1);
+    const ease = 1-Math.pow(1-t,3);
+    const val = ease*target;
+    el.textContent = Math.round(val)+suffix;
+    if(t<1) requestAnimationFrame(update);
+    else el.textContent = target+suffix;
+  }
+  requestAnimationFrame(update);
+}
+const counterObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      document.querySelectorAll('.page.active .stat-num[data-target]').forEach(animateCounter);
+      counterObs.disconnect();
     }
-
-    // ── CARD ──
-    function Card({task,onOpen,onDragStart}) {
-      const p=PC[task.priority]; const ec=EC[task.empresa]||"#64748B";
-      const overdue=new Date(task.deadline)<new Date()&&task.status!=="hecho";
-      const daysLeft=Math.ceil((new Date(task.deadline)-new Date())/(864e5));
-      return (
-        <div draggable onDragStart={e=>{e.dataTransfer.setData("text/plain",task.id);onDragStart(task.id)}}
-          onClick={()=>onOpen(task)}
-          style={{background:"#fff",borderRadius:12,padding:"14px 16px",marginBottom:8,border:"1px solid #E8ECF0",cursor:"grab",transition:"all 0.2s",position:"relative"}}
-          onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 6px 24px #0001";e.currentTarget.style.transform="translateY(-2px)"}}
-          onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none"}}>
-          <div style={{position:"absolute",left:0,top:0,bottom:0,width:4,background:ec,borderRadius:"12px 0 0 12px"}} />
-          <div style={{paddingLeft:6}}>
-            <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
-              <span style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:4,background:`${ec}22`,color:ec,letterSpacing:"0.3px"}}>{task.empresa}</span>
-              <span style={{fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4,background:p.bg,color:p.c}}>{task.priority}</span>
-              {task.note && <span style={{fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4,background:"#F0FDF4",color:"#15803D"}}>{task.note}</span>}
-            </div>
-            <div style={{fontSize:13,fontWeight:600,color:"#0F172A",lineHeight:1.4,marginBottom:8}}>{task.title}</div>
-            {task.detail && <div style={{fontSize:10,color:"#64748B",lineHeight:1.4,marginBottom:8,maxHeight:32,overflow:"hidden",textOverflow:"ellipsis"}}>{task.detail.slice(0,80)}{task.detail.length>80?"...":""}</div>}
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:9,color:"#94A3B8",fontWeight:500}}>{task.effort} · {task.area}</span>
-              <span style={{fontSize:10,fontWeight:overdue?700:500,color:overdue?"#DC2626":daysLeft<=3&&daysLeft>=0?"#EA580C":"#64748B",background:overdue?"#FEE2E2":daysLeft<=3&&daysLeft>=0?"#FFF7ED":"#F8FAFC",padding:"2px 8px",borderRadius:5}}>
-                {overdue?`⚠ Atrasada`:daysLeft<=0?"Hoy":`${daysLeft}d`} · {task.deadline.slice(5)}
-              </span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // ── KANBAN ──
-    function Kanban({tasks,onOpen,onStatusChange,onDragStart}) {
-      const [dragOver,setDragOver]=useState(null);
-      return (
-        <div style={{display:"flex",gap:16,overflowX:"auto",paddingBottom:8}}>
-          {STS.map(s=>{
-            const cfg=SC[s]; const col=tasks.filter(t=>t.status===s);
-            return (
-              <div key={s} style={{flex:1,minWidth:280}}
-                onDragOver={e=>{e.preventDefault();setDragOver(s)}}
-                onDragLeave={()=>setDragOver(null)}
-                onDrop={e=>{e.preventDefault();setDragOver(null);const id=e.dataTransfer.getData("text/plain");if(id)onStatusChange(id,s)}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,padding:"4px 2px"}}>
-                  <span style={{width:10,height:10,borderRadius:"50%",background:cfg.dot,boxShadow:`0 0 0 3px ${cfg.bg}`}} />
-                  <span style={{fontSize:14,fontWeight:800,color:"#0F172A",letterSpacing:"-0.3px"}}>{cfg.l}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:"#94A3B8",background:"#F1F5F9",minWidth:26,height:26,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}>{col.length}</span>
-                </div>
-                <div style={{background:dragOver===s?"#EEF2FF":"#F8FAFC",borderRadius:14,padding:10,minHeight:120,border:dragOver===s?"2px dashed #818CF8":"1.5px solid #F1F5F9",transition:"all 0.2s"}}>
-                  {col.map(t=><Card key={t.id} task={t} onOpen={onOpen} onDragStart={onDragStart}/>)}
-                  {col.length===0 && <div style={{textAlign:"center",padding:40,color:"#CBD5E1",fontSize:12}}>Arrastra tareas aquí</div>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-
-    // ── GANTT ──
-    function Gantt({tasks}) {
-      const sorted=[...tasks].sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
-      const dates=sorted.map(t=>new Date(t.deadline).getTime());
-      if(!dates.length) return <div style={{textAlign:"center",padding:40,color:"#94A3B8"}}>Sin tareas</div>;
-      const minD=Math.min(...dates)-12*864e5; const maxD=Math.max(...dates)+12*864e5; const range=maxD-minD;
-      const weeks=[]; let d=new Date(minD); while(d.getTime()<=maxD){weeks.push(new Date(d));d.setDate(d.getDate()+7)}
-      const fases=[...new Set(sorted.map(t=>t.fase))]; const fC=["#7C3AED","#2563EB","#EA580C","#059669"];
-      const today=new Date().getTime(); const todayPct=((today-minD)/range)*100;
-      return (
-        <div style={{overflowX:"auto",background:"#FAFBFC",borderRadius:16,padding:20,border:"1px solid #E2E8F0"}}>
-          <div style={{minWidth:900,position:"relative"}}>
-            <div style={{display:"flex",borderBottom:"2px solid #E2E8F0",paddingBottom:10,marginBottom:6}}>
-              <div style={{width:260,minWidth:260,fontSize:10,fontWeight:800,color:"#94A3B8",letterSpacing:"1.2px",padding:"0 8px"}}>TAREA</div>
-              <div style={{flex:1,display:"flex",position:"relative"}}>
-                {weeks.map((w,i)=><div key={i} style={{flex:7,fontSize:9,color:"#94A3B8",textAlign:"center",borderLeft:"1px solid #F1F5F9",fontWeight:600}}>{w.toLocaleDateString("es-CL",{day:"2-digit",month:"short"})}</div>)}
-              </div>
-            </div>
-            {fases.map((fase,fi)=>(
-              <div key={fase}>
-                <div style={{padding:"14px 8px 6px",fontSize:11,fontWeight:800,color:fC[fi%4],letterSpacing:"0.3px"}}>{fase}</div>
-                {sorted.filter(t=>t.fase===fase).map(task=>{
-                  const td=new Date(task.deadline).getTime(); const bar=EFFORTS[task.effort]||7;
-                  const startOff=Math.max(0,td-bar*864e5-minD); const leftPct=(startOff/range)*100; const widthPct=(bar*864e5/range)*100;
-                  const st=SC[task.status];
-                  return (
-                    <div key={task.id} style={{display:"flex",alignItems:"center",padding:"4px 0",borderBottom:"1px solid #FAFBFC"}}>
-                      <div style={{width:260,minWidth:260,padding:"0 8px",display:"flex",alignItems:"center",gap:6}}>
-                        <span style={{width:8,height:8,borderRadius:"50%",background:st.dot,flexShrink:0,boxShadow:`0 0 0 2px ${st.bg}`}} />
-                        <span style={{fontSize:11,color:"#334155",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",fontWeight:500}}>{task.title}</span>
-                      </div>
-                      <div style={{flex:1,position:"relative",height:26}}>
-                        <div style={{position:"absolute",left:`${leftPct}%`,width:`${Math.max(widthPct,2.5)}%`,height:20,top:3,background:task.status==="hecho"?`${st.dot}25`:`${fC[fi%4]}15`,borderRadius:6,border:`1.5px solid ${task.status==="hecho"?st.dot:fC[fi%4]}40`,display:"flex",alignItems:"center",paddingLeft:6,transition:"all 0.3s"}}>
-                          <span style={{fontSize:8,color:task.status==="hecho"?st.dot:fC[fi%4],fontWeight:700,whiteSpace:"nowrap"}}>{task.status==="hecho"?"✓ ":""}{task.deadline.slice(5)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-            {todayPct>0&&todayPct<100&&(
-              <div style={{position:"absolute",left:`calc(260px + ${todayPct}% * (100% - 260px) / 100%)`,top:0,bottom:0,width:2,background:"#DC2626",opacity:0.4,zIndex:1,pointerEvents:"none"}}>
-                <div style={{position:"absolute",top:-2,left:-12,fontSize:8,color:"#DC2626",fontWeight:700,background:"#FEE2E2",padding:"1px 4px",borderRadius:3}}>HOY</div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    // ── STATS ──
-    function Stats({tasks}) {
-      const t=tasks.length; const done=tasks.filter(x=>x.status==="hecho").length;
-      const doing=tasks.filter(x=>x.status==="en proceso").length;
-      const over=tasks.filter(x=>new Date(x.deadline)<new Date()&&x.status!=="hecho").length;
-      const pct=t?Math.round(done/t*100):0;
-      const items=[
-        {l:"Total",v:t,c:"#334155",bg:"#F1F5F9"},
-        {l:"En Proceso",v:doing,c:"#2563EB",bg:"#DBEAFE"},
-        {l:"Hechas",v:done,c:"#059669",bg:"#D1FAE5"},
-        {l:"Atrasadas",v:over,c:over?"#DC2626":"#64748B",bg:over?"#FEE2E2":"#F1F5F9"},
-        {l:"Avance",v:`${pct}%`,c:"#4F46E5",bg:"#EEF2FF"},
-      ];
-      return (
-        <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap"}}>
-          {items.map((s,i)=>(
-            <div key={i} style={{background:s.bg,borderRadius:12,padding:"14px 20px",flex:1,minWidth:90}}>
-              <div style={{fontSize:9,fontWeight:800,color:"#94A3B8",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:3}}>{s.l}</div>
-              <div style={{fontSize:24,fontWeight:800,color:s.c,letterSpacing:"-1px"}}>{s.v}</div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    // ── APP ──
-    function App() {
-      const [zT,setZT]=useState(()=>restore("eco_z",INIT_Z));
-      const [wT,setWT]=useState(()=>restore("eco_w",INIT_W));
-      const [proj,setProj]=useState("z");
-      const [view,setView]=useState("kanban");
-      const [modal,setModal]=useState(null);
-      const [filter,setFilter]=useState("todas");
-      const [drag,setDrag]=useState(null);
-
-      const tasks=proj==="z"?zT:wT;
-      const setTasks=proj==="z"?setZT:setWT;
-
-      useEffect(()=>{persist("eco_z",zT)},[zT]);
-      useEffect(()=>{persist("eco_w",wT)},[wT]);
-
-      const emps=["todas",...new Set(tasks.map(t=>t.empresa))];
-      const filtered=filter==="todas"?tasks:tasks.filter(t=>t.empresa===filter);
-
-      const changeStatus=useCallback((id,st)=>setTasks(p=>p.map(t=>t.id===id?{...t,status:st}:t)),[setTasks]);
-      const saveTask=useCallback(u=>setTasks(p=>p.map(t=>t.id===u.id?u:t)),[setTasks]);
-      const deleteTask=useCallback(id=>setTasks(p=>p.filter(t=>t.id!==id)),[setTasks]);
-
-      const addTask=()=>{
-        const pre=proj==="z"?"Z":"W";
-        const n=tasks.length+1;
-        const t={id:`${pre}-${String(n).padStart(3,"0")}`,title:"Nueva tarea",area:proj==="z"?"Contenido":"Desarrollo",status:"pendiente",priority:"Media",deadline:new Date(Date.now()+7*864e5).toISOString().slice(0,10),empresa:"Todas",fase:proj==="z"?"Fase 1: Contenido Foto":"Fase 1: Webs Listas",effort:"M",deliverable:"Por definir",detail:""};
-        setTasks(p=>[...p,t]);
-        setModal(t);
-      };
-
-      const accent=proj==="z"?"#7C3AED":"#2563EB";
-
-      return (
-        <div style={{fontFamily:"'DM Sans',-apple-system,system-ui,sans-serif",background:"#fff",color:"#0F172A",minHeight:"100vh"}}>
-          {/* HEADER */}
-          <div style={{background:"linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#334155 100%)",padding:"24px 28px 0",color:"#fff"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12,paddingBottom:16}}>
-              <div>
-                <div style={{fontSize:9,fontWeight:800,letterSpacing:"3px",color:"#475569",textTransform:"uppercase",marginBottom:6}}>Proyecto Ecosistemas</div>
-                <h1 style={{fontSize:24,fontWeight:800,margin:0,letterSpacing:"-0.8px"}}>Gestión de Proyectos</h1>
-                <p style={{fontSize:11,color:"#64748B",margin:"4px 0 0"}}>Arrastra tarjetas entre columnas · Click para editar · Todo se guarda automático</p>
-              </div>
-              <button onClick={addTask} style={{padding:"10px 24px",borderRadius:10,border:"2px solid #ffffff20",background:"transparent",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",letterSpacing:"0.3px",transition:"all 0.2s"}}
-                onMouseEnter={e=>{e.currentTarget.style.background="#ffffff15"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}>+ Nueva Tarea</button>
-            </div>
-            <div style={{display:"flex",gap:4}}>
-              {[{k:"z",l:"📸 Zurnerym — RRSS",c:"#7C3AED"},{k:"w",l:"🌐 Diseño Web",c:"#2563EB"}].map(p=>(
-                <button key={p.k} onClick={()=>{setProj(p.k);setFilter("todas")}} style={{padding:"10px 24px",fontSize:12,fontWeight:700,borderRadius:"12px 12px 0 0",cursor:"pointer",border:"none",transition:"all 0.2s",background:proj===p.k?"#fff":"#ffffff10",color:proj===p.k?p.c:"#64748B"}}>{p.l}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* TOOLBAR */}
-          <div style={{padding:"14px 28px",borderBottom:"1px solid #E2E8F0",display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:10,alignItems:"center"}}>
-            <div style={{display:"flex",gap:4}}>
-              {[{k:"kanban",l:"🗂 Kanban"},{k:"gantt",l:"📅 Gantt"}].map(v=>(
-                <button key={v.k} onClick={()=>setView(v.k)} style={{padding:"7px 18px",fontSize:11,fontWeight:700,borderRadius:8,cursor:"pointer",transition:"all 0.15s",border:view===v.k?`2px solid ${accent}`:"1.5px solid #E2E8F0",background:view===v.k?`${accent}10`:"#fff",color:view===v.k?accent:"#64748B"}}>{v.l}</button>
-              ))}
-            </div>
-            <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}}>
-              <span style={{fontSize:9,fontWeight:800,color:"#94A3B8",letterSpacing:"1px",marginRight:4}}>FILTRAR:</span>
-              {emps.map(e=>{
-                const c=EC[e]||accent;
-                return <button key={e} onClick={()=>setFilter(e)} style={{padding:"5px 12px",fontSize:10,fontWeight:600,borderRadius:20,cursor:"pointer",transition:"all 0.15s",border:filter===e?`2px solid ${c}`:"1.5px solid #E2E8F0",background:filter===e?`${c}15`:"#fff",color:filter===e?c:"#94A3B8"}}>{e==="todas"?"Todas":e}</button>
-              })}
-            </div>
-          </div>
-
-          {/* CONTENT */}
-          <div style={{padding:"20px 28px 40px"}}>
-            <Stats tasks={filtered}/>
-            {view==="kanban"?<Kanban tasks={filtered} onOpen={setModal} onStatusChange={changeStatus} onDragStart={setDrag}/>:<Gantt tasks={filtered}/>}
-          </div>
-
-          <div style={{padding:"12px 28px",borderTop:"1px solid #F1F5F9",fontSize:10,color:"#CBD5E1",textAlign:"center",background:"#FAFBFC"}}>
-            Proyecto Ecosistemas · Arrastra tarjetas entre columnas para cambiar estado · Click para editar detalles · Los cambios se guardan automáticamente
-          </div>
-
-          <Modal task={modal} onClose={()=>setModal(null)} onSave={saveTask} onDelete={deleteTask}/>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
+  });
+},{threshold:.3});
+const sg = document.querySelector('.stats-grid');
+if(sg) counterObs.observe(sg);
+ 
+function scrollToCierre(){
+  const activePage = document.querySelector('.page.active');
+  const cierre = activePage.querySelector('.section-cierre,[id$="cierre"]');
+  if(cierre) cierre.scrollIntoView({behavior:'smooth'});
+}
+</script>
 </body>
 </html>
